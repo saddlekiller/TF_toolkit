@@ -23,22 +23,40 @@ def placeholder_mapping(config):
 
 def layers_mapping(name, config):
 
-    activation = config['activation']
-    activation_assertion(activation)
-    if activation == 'relu':
-        activation = tf.nn.relu
-    elif activation == 'sigmoid':
-        activation = tf.nn.sigmoid
-    elif activation == 'tanh':
-        activation = tf.nn.tanh
-    elif activation == 'softplus':
-        activation = tf.nn.softplus
-    elif activation == '':
-        activation = tf.identity
-
+    if 'activation' in config.keys():
+        activation = config['activation']
+        activation_assertion(activation)
+        if activation == 'relu':
+            activation = tf.nn.relu
+        elif activation == 'sigmoid':
+            activation = tf.nn.sigmoid
+        elif activation == 'tanh':
+            activation = tf.nn.tanh
+        elif activation == 'softplus':
+            activation = tf.nn.softplus
+        elif activation == '':
+            activation = tf.identity
+    layer_assertion(config)
     if config['layer_type'] == 'affine_layer':
+        affine_assertion(config)
         shape = [config['input_dim'], config['output_dim']]
-    return affine_layer(scope_name = name, shape = shape, activation = activation)
+        return affine_layer(scope_name = name, shape = shape, activation = activation)
+    elif config['layer_type'] == 'convolution_layer':
+        convolution_assertion(config)
+        shape = [config['kernel_size1'], config['kernel_size2'], config['input_dim'], config['output_dim']]
+        padding = config['padding']
+        strides = config['strides']
+        return convolution_layer(scope_name = name, shape = shape, activation = activation, padding = padding, strides = strides)
+    elif config['layer_type'] == 'maxpooling_layer':
+        maxpooling_assertion(config)
+        ksize = config['ksize']
+        padding = config['padding']
+        strides = config['strides']
+        return maxpooling_layer(scope_name = name, padding = padding, strides = strides, ksize = ksize)
+    elif config['layer_type'] == 'reshape_layer':
+        reshape_assertion(config)
+        shape = config['shape']
+        return reshape_layer(scope_name = name, shape = shape)
 
 def optimizer_mapping(config):
 
