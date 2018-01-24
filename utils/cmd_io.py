@@ -38,7 +38,7 @@ WHITE = '47'
 def combine(mode, foreground, background):
     return BEGIN + ';'.join([i for i in [mode, foreground, background] if i != '']) + 'm'
 
-def cmd_print(msg_type, msg):
+def cmd_print(msg_type, msg, show = True):
     format_expression = '[{0:^11}] '
     if msg_type == 0:#INFO
         cmd_msg = combine(mode_default, blue, SPACE)+format_expression.format('INFO')+msg+CLEAR
@@ -50,19 +50,10 @@ def cmd_print(msg_type, msg):
         cmd_msg = combine(mode_default, green, SPACE)+format_expression.format('SUCCESS')+msg+CLEAR
     elif msg_type == 4:
         cmd_msg = combine(mode_default, yellow, SPACE)+format_expression.format('IMPORTANT')+msg+CLEAR
+    elif msg_type == 5:
+        cmd_msg = combine(mode_default, yellow, SPACE)+msg+CLEAR
     else:
         cmd_msg = msg
-    print(cmd_msg)
+    if show == True:
+        print(cmd_msg)
     return cmd_msg
-
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
