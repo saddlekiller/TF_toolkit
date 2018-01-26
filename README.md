@@ -13,3 +13,4 @@ This directory is used for testing codes via notebook
 - layers.py:         defination of layers
 - params,py:         parameter initialization
 - tools.py:          cover numpy operations
+- model_builder.py:  read configurations and build models
