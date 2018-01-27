@@ -7,16 +7,34 @@ class dataProvider(object):
     def __init__(self):
         raise NotImplementedError
 
-    def next(self):
+    def n_batches(self):
         raise NotImplementedError
 
-    def __str__(self):
+    def n_samples(self):
         raise NotImplementedError
 
-    def _shuffle(self):
+    def reset(self):
+        raise NotImplementedError
+
+    def _new_epoch(self):
+        raise NotImplementedError
+
+    def shuffle(self):
+        raise NotImplementedError
+
+    def __iter__(self):
+        return self
+
+    def next():
+        return __next__(self)
+
+    def __next__(self):
         raise NotImplementedError
 
     def one_hot(self):
+        raise NotImplementedError
+
+    def __str__(self):
         raise NotImplementedError
 
 

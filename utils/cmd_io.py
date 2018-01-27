@@ -43,7 +43,7 @@ def cmd_print(msg_type, msg, show = True):
     if msg_type == 0:#INFO
         cmd_msg = combine(mode_default, blue, SPACE)+format_expression.format('INFO')+msg+CLEAR
     elif msg_type == 1:
-        cmd_msg = combine(mode_highlight, red, YELLOW)+format_expression.format('WARNING')+CLEAR+combine(mode_blink, red, SPACE)+msg
+        cmd_msg = combine(mode_highlight, red, YELLOW)+format_expression.format('WARNING')+combine(mode_blink, red, SPACE)+msg+CLEAR
     elif msg_type == 2:
         cmd_msg = combine(mode_default, red, SPACE)+format_expression.format('ERROR')+msg+CLEAR
     elif msg_type == 3:
