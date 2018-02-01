@@ -49,6 +49,13 @@ def layers_mapping(name, config):
         padding = config['padding']
         strides = config['strides']
         return convolution_layer(scope_name = name, shape = shape, activation = activation, padding = padding, strides = strides)
+    elif config['layer_type'] == 'deconvolution_layer':
+        deconvolution_assertion(config)
+        shape = [config['kernel_size1'], config['kernel_size2'], config['output_dim'], config['input_dim']]
+        padding = config['padding']
+        strides = config['strides']
+        output_shape = config['output_shape']
+        return deconvolution_layer(scope_name = name, shape = shape, activation = activation, padding = padding, strides = strides, output_shape = output_shape)
     elif config['layer_type'] == 'maxpooling_layer':
         maxpooling_assertion(config)
         ksize = config['ksize']

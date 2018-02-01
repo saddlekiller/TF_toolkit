@@ -20,6 +20,10 @@ def convolution_assertion(config):
     assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'input_dim', 'output_dim', 'kernel_size1', 'kernel_size2', 'padding', 'strides', 'activation']))
     assert(config['padding'] in ['VALID', 'SAME'])
 
+def deconvolution_assertion(config):
+    assert(set(config.keys()).issubset(['inputs', 'outputs', 'output_shape', 'layer_type', 'input_dim', 'output_dim', 'kernel_size1', 'kernel_size2', 'padding', 'strides', 'activation']))
+    assert(config['padding'] in ['VALID', 'SAME'])
+
 def maxpooling_assertion(config):
     assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'input_dim', 'output_dim', 'kernel_size1', 'kernel_size2', 'padding', 'strides', 'ksize']))
 

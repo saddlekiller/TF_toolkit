@@ -60,23 +60,27 @@ class convolution_layer(layer):
 
 class deconvolution_layer(layer):
 
-    def __init__(self, scope_name, shape, activation, padding, strides):
+    def __init__(self, scope_name, shape, activation, padding, strides, output_shape):
         self.scope_name = scope_name
         self.shape = shape
         self.activation = activation
         self.padding = padding
         self.strides = strides
-        # with tf.variable_scope(self.scope_name):
-        #     self.param = dict()
-        #     self.param['w'] = truncated_normal('weight', self.shape).get()
-        #     self.param['b'] = truncated_normal('bias', self.shape[-1]).get()
-        pass
+        self.output_shape = output_shape
+        with tf.variable_scope(self.scope_name):
+            self.param = dict()
+            self.param['w'] = truncated_normal('weight', self.shape).get()
+            self.param['b'] = truncated_normal('bias', self.shape[2]).get()
+        # print(self.shape)
+        # print('----------------------------------------------')
+        # pass
 
     def outputs(self, inputs):
-        # with tf.variable_scope(self.scope_name):
-        #     self.outputs = self.activation(tf.add(tf.nn.conv2d(input = inputs, filter = self.param['w'], padding = self.padding, strides = self.strides), self.param['b']))
-        # return self.outputs
-        pass
+        with tf.variable_scope(self.scope_name):
+            self.outputs = self.activation(tf.add(tf.nn.conv2d_transpose(inputs,self.param['w'], output_shape=self.output_shape, padding = self.padding, strides=self.strides), self.param['b']))
+            # self.outputs = self.activation(tf.add(tf.nn.conv2d(input = inputs, filter = self.param['w'], padding = self.padding, strides = self.strides), self.param['b']))
+        return self.outputs
+        # pass
 
     def __str__(self):
         return 'scope name: {0:}, class name: {1:}'.format(self.scope_name, super(deconvolution_layer).__str__())
