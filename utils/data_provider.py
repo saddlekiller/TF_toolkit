@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
-from cmd_io import *
+# from cmd_io import *
+from logging_io import *
 
 class dataProvider(object):
 
@@ -106,7 +107,7 @@ class MNISTProvider(dataProvider):
         self.targets = one_hot_res
 
     def __str__(self):
-        return cmd_print(0, ('\n{0:40}\n|{1:^38}|\n{0:40}\n'+
+        return logging_io.BUILD('\n{0:40}\n|{1:^38}|\n{0:40}\n'+
                                 '| {2:17}| {3:17} |\n'+
                                 '| {4:17}| {5:17} |\n'+
                                 '| {6:17}| {7:17} |\n'+
@@ -124,7 +125,7 @@ class MNISTProvider(dataProvider):
                                         'shuffle',
                                         self.isShuffle,
                                         'one_hot',
-                                        self.isOneHot), False)
+                                        self.isOneHot)
 
 if __name__ == '__main__':
 

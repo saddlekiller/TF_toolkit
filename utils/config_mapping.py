@@ -1,5 +1,6 @@
 import tensorflow as tf
-from cmd_io import *
+# from cmd_io import *
+from logging_io import *
 from assertions import *
 from layers import *
 
@@ -19,7 +20,8 @@ def placeholder_mapping(config):
             dtype = tf.bool
         return tf.placeholder(name = name, shape = shape, dtype = dtype)
     except:
-        raise Exception(cmd_print(2, 'PLACEHOLDER MAPPING FAILED', False))
+        raise Exception(logging_io.ERROR_INFO('PLACEHOLDER MAPPING FAILED'))
+        # raise Exception(cmd_print(2, 'PLACEHOLDER MAPPING FAILED', False))
 
 def layers_mapping(name, config):
 

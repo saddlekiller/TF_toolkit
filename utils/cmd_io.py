@@ -1,6 +1,7 @@
 BEGIN= '\033['
 CLEAR = '\033[0m'
 SPACE = ''
+NONE = ''
 
 # mode methods
 mode_default = '0'
@@ -38,6 +39,9 @@ WHITE = '47'
 def combine(mode, foreground, background):
     return BEGIN + ';'.join([i for i in [mode, foreground, background] if i != '']) + 'm'
 
+
+
+
 def cmd_print(msg_type, msg, show = True):
     format_expression = '[{0:^11}] '
     if msg_type == 0:#INFO
@@ -57,3 +61,28 @@ def cmd_print(msg_type, msg, show = True):
     if show == True:
         print(cmd_msg)
     return cmd_msg
+
+# def combine1(mode, foreground, background):
+#     return ';'.join([i for i in [mode, foreground, background] if i != '']) + 'm'
+#
+# def wrapper(colors, content):
+#     return BEGIN + '{}{}'.format(colors, content) + CLEAR
+#
+# class logging(object):
+#
+#     def __init__(self):
+#         pass
+#
+#     @staticmethod
+#     def DEBUG(content):
+#         print(wrapper(combine1(mode_default, red, YELLOW), content))
+#
+#
+#
+#
+#
+#
+#
+#
+# if __name__ == '__main__':
+#     logging.DEBUG('This is a debug demo.')

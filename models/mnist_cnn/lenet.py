@@ -5,8 +5,10 @@ sys.path.append('../../utils')
 from config_mapping import *
 from tools import *
 from data_provider import *
-from cmd_io import *
+# from cmd_io import *
 from model_builder import *
+from logging import *
+
 
 data_conf_dir = 'data.conf'
 model_conf_dir = 'model.conf'

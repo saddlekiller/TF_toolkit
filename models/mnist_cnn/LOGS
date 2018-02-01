@@ -1,0 +1,38 @@
+[BUILD]   :scope name: reshape1, class name: <super: <class 'reshape_layer'>, NULL>
+[BUILD]   :scope name: maxpooling1, class name: <super: <class 'maxpooling_layer'>, NULL>
+[BUILD]   :scope name: convolution1, class name: <super: <class 'convolution_layer'>, NULL>
+[BUILD]   :scope name: maxpooling2, class name: <super: <class 'maxpooling_layer'>, NULL>
+[BUILD]   :scope name: convolution2, class name: <super: <class 'convolution_layer'>, NULL>
+[BUILD]   :scope name: reshape2, class name: <super: <class 'reshape_layer'>, NULL>
+[BUILD]   :scope name: affine1, class name: <super: <class 'affine_layer'>, NULL>
+[BUILD]   :scope name: affine2, class name: <super: <class 'affine_layer'>, NULL>
+[BUILD]   :scope name: outputs, class name: <super: <class 'affine_layer'>, NULL>
+[BUILD]   :Tensor("Mean:0", shape=(), dtype=float32)
+[BUILD]   :name: "Adam"
+op: "NoOp"
+input: "^Adam/update_convolution1/weight/ApplyAdam"
+input: "^Adam/update_convolution1/bias/ApplyAdam"
+input: "^Adam/update_convolution2/weight/ApplyAdam"
+input: "^Adam/update_convolution2/bias/ApplyAdam"
+input: "^Adam/update_affine1/weight/ApplyAdam"
+input: "^Adam/update_affine1/bias/ApplyAdam"
+input: "^Adam/update_affine2/weight/ApplyAdam"
+input: "^Adam/update_affine2/bias/ApplyAdam"
+input: "^Adam/update_outputs/weight/ApplyAdam"
+input: "^Adam/update_outputs/bias/ApplyAdam"
+input: "^Adam/Assign"
+input: "^Adam/Assign_1"
+
+[BUILD]   :Tensor("Sum:0", shape=(), dtype=float32)
+[RESULT]  :Epoch     0 Training LOSS: 233.93764 Training ACC: 0.73914
+[RESULT]  :Epoch     1 Training LOSS: 34.27565 Training ACC: 0.8987
+[RESULT]  :Epoch     2 Training LOSS: 20.33248 Training ACC: 0.9259
+[RESULT]  :Epoch     3 Training LOSS: 14.17155 Training ACC: 0.94004
+[RESULT]  :Epoch     4 Training LOSS: 10.55475 Training ACC: 0.9501
+[RESULT]  :Epoch     4 validation LOSS: 11.41501 validation ACC: 0.9489
+[RESULT]  :Epoch     5 Training LOSS: 8.26714 Training ACC: 0.95668
+[RESULT]  :Epoch     6 Training LOSS: 6.54859 Training ACC: 0.96062
+[RESULT]  :Epoch     7 Training LOSS: 5.07539 Training ACC: 0.96612
+[RESULT]  :Epoch     8 Training LOSS: 4.20144 Training ACC: 0.96918
+[RESULT]  :Epoch     9 Training LOSS: 3.38314 Training ACC: 0.97246
+[RESULT]  :Epoch     9 validation LOSS: 5.4554 validation ACC: 0.961

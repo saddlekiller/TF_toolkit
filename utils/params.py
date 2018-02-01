@@ -1,5 +1,6 @@
 import tensorflow as tf
-from cmd_io import *
+# from cmd_io import *
+from logging_io import *
 
 class variables(object):
 
@@ -12,7 +13,7 @@ class variables(object):
         return self.param
 
     def __str__(self, classname):
-        return cmd_print(0, '<' + classname + '> ' + str(self.param))
+        return logging_io.BUILD_INFO('<' + classname + '> ' + str(self.param))
 
 class truncated_normal(variables):
 
