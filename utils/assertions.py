@@ -25,7 +25,10 @@ def deconvolution_assertion(config):
     assert(config['padding'] in ['VALID', 'SAME'])
 
 def maxpooling_assertion(config):
-    assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'input_dim', 'output_dim', 'kernel_size1', 'kernel_size2', 'padding', 'strides', 'ksize']))
+    assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'input_dim', 'output_dim', 'padding', 'strides', 'ksize']))
+
+def upsampling_assertion(config):
+    assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'output_shape', 'ksize']))
 
 def reshape_assertion(config):
     assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'shape']))

@@ -62,6 +62,11 @@ def layers_mapping(name, config):
         padding = config['padding']
         strides = config['strides']
         return maxpooling_layer(scope_name = name, padding = padding, strides = strides, ksize = ksize)
+    elif config['layer_type'] == 'upsampling_layer':
+        upsampling_assertion(config)
+        ksize = config['ksize']
+        output_shape = config['output_shape']
+        return upsampling_layer(scope_name = name, ksize = ksize, output_shape = output_shape)
     elif config['layer_type'] == 'reshape_layer':
         reshape_assertion(config)
         shape = config['shape']
