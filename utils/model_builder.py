@@ -195,7 +195,7 @@ def autoencoder_builder(data_conf_dir, model_conf_dir, data_provider, round_val=
                     # accs = 0
                     for batch_valid_inputs, batch_valid_targets in valid_provider:
                         err = sess.run([loss], feed_dict = {inputs_placeholder:batch_valid_inputs})
-                        errs += err
+                        errs += err[0]
                         # accs += acc
                     log['valid']['err'].append(round(errs/valid_provider.n_batches(), round_val))
                     # log['valid']['acc'].append(round(accs/valid_provider.n_samples(), round_val))
