@@ -73,11 +73,24 @@ def layers_mapping(name, config):
         return reshape_layer(scope_name = name, shape = shape)
 
 def optimizer_mapping(config):
-
+# class tf.train.GradientDescentOptimizer
+# class tf.train.AdagradOptimizer
+# class tf.train.MomentumOptimizer
+# class tf.train.AdamOptimizer
+# class tf.train.FtrlOptimizer
+# class tf.train.RMSPropOptimizer
+    optimizer_assertion(config['opt_type'])
+    optimizer_option_assertion(config['opt_type'], config)
     if config['opt_type'] == 'adam':
         return tf.train.AdamOptimizer(config['lr'])
     elif config['opt_type'] == 'sgd':
         return tf.train.GradientDescentOptimizer(config['lr'])
+    elif config['opt_type'] == 'adamgrad':
+        return tf.train.AdagradOptimizer(config['lr'])
+    elif config['opt_type'] == 'momentum':
+        return tf.train.MomentumOptimizer(config['lr'], config['mom'])
+    elif config['opt_type'] == 'rms':
+        return tf.train.RMSPropOptimizer(config['lr'], config['decay'])
 
 def loss_mapping(config):
     if config['loss_type'] == 'cross_entropy':

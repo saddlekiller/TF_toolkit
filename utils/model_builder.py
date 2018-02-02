@@ -10,7 +10,7 @@ def basic_builder(data_conf_dir, model_conf_dir, data_provider, round_val=5, sav
 
     data_conf = json.load(open(data_conf_dir, 'r'))
     model_conf = json.load(open(model_conf_dir, 'r'))
-    graph_assertion(model_conf)
+    graph_assertion(model_conf['layers'])
     train_provider = data_provider(data_conf['training_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']))
     valid_provider = data_provider(data_conf['validation_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']))
     assert(isinstance(train_provider, dataProvider))
@@ -120,7 +120,7 @@ def autoencoder_builder(data_conf_dir, model_conf_dir, data_provider, round_val=
 
     data_conf = json.load(open(data_conf_dir, 'r'))
     model_conf = json.load(open(model_conf_dir, 'r'))
-    graph_assertion(model_conf)
+    graph_assertion(model_conf['layers'])
     train_provider = data_provider(data_conf['training_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']))
     valid_provider = data_provider(data_conf['validation_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']))
     assert(isinstance(train_provider, dataProvider))
