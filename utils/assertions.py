@@ -35,3 +35,10 @@ def reshape_assertion(config):
 
 def scope_assertion(scopes):
     assert(len(scopes) == len(list(set(scopes))))
+
+def graph_assertion(config):
+    pairs = []
+    for key, item in layers_config.items():
+        pairs.append((item['inputs'], key))
+    assert(len(pairs) == len(list(set(pairs))))
+    return pairs
