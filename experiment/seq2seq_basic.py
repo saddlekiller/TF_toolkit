@@ -10,6 +10,7 @@ from assertions import *
 from config_mapping import *
 from tools import *
 from layers import *
+from tensorflow.contrib.seq2seq import *
 
 corpus_dir = '../../Basic_Tensorflow/corpus/'
 label_map = pickle.load(open(corpus_dir + 'poilabel_map.npz', 'rb'))
@@ -34,3 +35,5 @@ reshape_layer1_o = reshape_layer1.outputs(inputs_placeholder)
 affine_layer1_o = affine_layer1.outputs(reshape_layer1_o)
 reshape_layer2_o = reshape_layer2.outputs(affine_layer1_o)
 lstm_layer1_o = lstm_layer1.outputs(reshape_layer2_o)
+
+helper = TrainingHelper(target_embeddeds, self.decoder_seq_length)
