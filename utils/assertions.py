@@ -64,6 +64,9 @@ def reshape_assertion(config):
     assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'shape']))
     logging_io.SUCCESS_INFO('RESHAPE ASSERTION PASS')
 
+def lstm_assertion(config):
+    assert(set(config.keys()).issubset(['inputs', 'outputs', 'layer_type', 'cell_size']))
+
 def scope_assertion(scopes):
     assert(len(scopes) == len(list(set(scopes))))
     logging_io.SUCCESS_INFO('SCOPE ASSERTION PASS')

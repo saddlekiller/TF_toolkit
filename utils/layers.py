@@ -157,3 +157,19 @@ class upsampling_layer(layer):
 
     def __str__(self):
         return 'scope name: {0:}, class name: {1:}'.format(self.scope_name, super(upsampling_layer).__str__())
+
+class lstm_layer(layer):
+
+    def __init__(self, name_scope, cell_size, forget_bias = 0.0, reuse = False):
+        self.cell_size = cell_size
+        self.forget_bias = forget_bias
+        self.reuse = reuse
+
+    def outputs(self, inputs):
+        with tf.variable_scope(name_scope, ):
+            self.outputs, self.states = tf.nn.dynamic_rnn(cell = tf.contrib.rnn.BasicLSTMCell(self.cell_size, forget_bias = self.forget, reuse = self.reuse
+            ), inputs=inputs, dtype=tf.float32)
+        return self.outputs, self.states
+
+    def __str__(self):
+        return 'scope name: {0:}, class name: {1:}'.format(self.scope_name, super(lstm_layer).__str__())

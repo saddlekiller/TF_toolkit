@@ -71,6 +71,11 @@ def layers_mapping(name, config):
         reshape_assertion(config)
         shape = config['shape']
         return reshape_layer(scope_name = name, shape = shape)
+    elif config['layer_type'] == 'lstm_layer':
+        lstm_assertion(config)
+        cell_size = config['cell_size']
+        return lstm_layer(scope_name = name, cell_size = cell_size)
+
 
 def optimizer_mapping(config):
 # class tf.train.GradientDescentOptimizer
