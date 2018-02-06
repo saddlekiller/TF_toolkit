@@ -305,12 +305,12 @@ class Seq2SeqModel(object):
 
 if __name__ == '__main__':
     corpus_dir = '../../Basic_Tensorflow/corpus/'
-    label_map = pickle.load(open(corpus_dir + 'label_map.npz', 'rb'))
-    dictionary = pickle.load(open(corpus_dir + 'words.dict', 'rb'))
+    label_map = pickle.load(open(corpus_dir + 'raw_poilabel_map.npz', 'rb'))
+    dictionary = pickle.load(open(corpus_dir + 'raw_poiwords.dict', 'rb'))
     max_word = 35
     voc_size = len(dictionary)
     embedding_size = 128
-    provider = idProvider(corpus_dir + 'anouymous_corpus_full_train.txt', 50) #anonymous_raw_poi_train.txt
+    provider = idProvider(corpus_dir + 'anonymous_raw_poi_train.txt', 50) #anonymous_raw_poi_train.txt
 
 
     graph = tf.Graph()
@@ -318,7 +318,8 @@ if __name__ == '__main__':
         model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
-        for length, batch_input, batch_targets in provider:
-            feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
-            _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
-            tf.logging.info('LOSS is : ' + str(loss))
+        for i in range(20):
+            for length, batch_input, batch_targets in provider:
+                feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
+                _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
+            logging_io.DEBUG_INFO('LOSS is : ' + str(loss))
