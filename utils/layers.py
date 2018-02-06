@@ -185,8 +185,8 @@ class lstm_layer(layer):
             self.outputs, self.states = tf.nn.dynamic_rnn(cell = tf.contrib.rnn.BasicLSTMCell(self.cell_size, forget_bias = self.forget_bias, reuse = self.reuse
             ), inputs=inputs, dtype=tf.float32)
             if self.needSummary:
-                tf.summary.scalar(self.name_scope+'_outputs', self.outputs[:,-1,:])
-                tf.summary.scalar(self.name_scope+'_states', self.states)
+                tf.summary.image(self.name_scope+'_outputs', tf.expand_dims(self.outputs, 3))
+                tf.summary.image(self.name_scope+'_states', tf.reshape(self.states, [1, -1, self.cell_size, 1]))
 
         return self.outputs, self.states
 
