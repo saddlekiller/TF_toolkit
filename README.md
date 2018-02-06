@@ -14,3 +14,13 @@ This directory is used for testing codes via notebook
 - params,py:         parameter initialization
 - tools.py:          cover numpy operations
 - model_builder.py:  read configurations and build models
+
+## models
+mnist_demo:
+    basic affine layer model for mnist
+
+mnist_cnn:
+    lenet for mnist
+
+mnist_autoencoder:
+    basic autoencoder demo for mnist
