@@ -42,39 +42,55 @@ def layers_mapping(name, config):
     if config['layer_type'] == 'affine_layer':
         affine_assertion(config)
         shape = [config['input_dim'], config['output_dim']]
-        return affine_layer(scope_name = name, shape = shape, activation = activation)
+        try:
+            needSummary = config['summary']
+        except:
+            needSummary = False
+        return affine_layer(name_scope = name, shape = shape, activation = activation, needSummary = needSummary)
     elif config['layer_type'] == 'convolution_layer':
         convolution_assertion(config)
         shape = [config['kernel_size1'], config['kernel_size2'], config['input_dim'], config['output_dim']]
         padding = config['padding']
         strides = config['strides']
-        return convolution_layer(scope_name = name, shape = shape, activation = activation, padding = padding, strides = strides)
+        try:
+            needSummary = config['summary']
+        except:
+            needSummary = False
+        return convolution_layer(name_scope = name, shape = shape, activation = activation, padding = padding, strides = strides, needSummary = needSummary)
     elif config['layer_type'] == 'deconvolution_layer':
         deconvolution_assertion(config)
         shape = [config['kernel_size1'], config['kernel_size2'], config['output_dim'], config['input_dim']]
         padding = config['padding']
         strides = config['strides']
         output_shape = config['output_shape']
-        return deconvolution_layer(scope_name = name, shape = shape, activation = activation, padding = padding, strides = strides, output_shape = output_shape)
+        try:
+            needSummary = config['summary']
+        except:
+            needSummary = False
+        return deconvolution_layer(name_scope = name, shape = shape, activation = activation, padding = padding, strides = strides, output_shape = output_shape, needSummary = needSummary)
     elif config['layer_type'] == 'maxpooling_layer':
         maxpooling_assertion(config)
         ksize = config['ksize']
         padding = config['padding']
         strides = config['strides']
-        return maxpooling_layer(scope_name = name, padding = padding, strides = strides, ksize = ksize)
+        return maxpooling_layer(name_scope = name, padding = padding, strides = strides, ksize = ksize)
     elif config['layer_type'] == 'upsampling_layer':
         upsampling_assertion(config)
         ksize = config['ksize']
         output_shape = config['output_shape']
-        return upsampling_layer(scope_name = name, ksize = ksize, output_shape = output_shape)
+        return upsampling_layer(name_scope = name, ksize = ksize, output_shape = output_shape)
     elif config['layer_type'] == 'reshape_layer':
         reshape_assertion(config)
         shape = config['shape']
-        return reshape_layer(scope_name = name, shape = shape)
+        return reshape_layer(name_scope = name, shape = shape)
     elif config['layer_type'] == 'lstm_layer':
         lstm_assertion(config)
         cell_size = config['cell_size']
-        return lstm_layer(scope_name = name, cell_size = cell_size)
+        try:
+            needSummary = config['summary']
+        except:
+            needSummary = False
+        return lstm_layer(name_scope = name, cell_size = cell_size, needSummary = needSummary)
 
 
 def optimizer_mapping(config):

@@ -11,4 +11,4 @@ from model_builder import *
 data_conf_dir = 'data.conf'
 model_conf_dir = 'model.conf'
 data_provider = MNISTProvider
-log = basic_builder(data_conf_dir, model_conf_dir, data_provider)
+log = basic_builder(data_conf_dir, model_conf_dir, data_provider, needSummary=True)

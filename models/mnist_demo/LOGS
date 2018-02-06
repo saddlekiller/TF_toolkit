@@ -17,8 +17,9 @@
 [SUCCESS] :LAYER ASSERTION PASS
 [SUCCESS] :AFFINE ASSERTION PASS
 [BUILD]   :scope name: outputs, class name: <super: <class 'affine_layer'>, NULL>
-[WARNING] :Tensor("outputs_1/Identity:0", shape=(?, 10), dtype=float32)
-[WARNING] :Tensor("targets_placeholder:0", shape=(?, 10), dtype=float32)
+[WARNING] :SUMMARY ASSERTION BEGIN
+[SUCCESS] :SUMMARY ASSERTION PASS
+[WARNING] :SUMMARY ASSERTION END
 [BUILD]   :Tensor("Mean:0", shape=(), dtype=float32)
 [SUCCESS] :OPTIMIZER ASSERTION PASS
 [SUCCESS] :OPTIMIZER ASSERTION PASS
@@ -36,15 +37,4 @@ input: "^Adam/Assign"
 input: "^Adam/Assign_1"
 
 [BUILD]   :Tensor("Sum:0", shape=(), dtype=float32)
-[RESULT]  :Epoch     0 Training LOSS: 92.07825 Training ACC: 0.79594
-[RESULT]  :Epoch     1 Training LOSS: 19.34661 Training ACC: 0.91734
-[RESULT]  :Epoch     2 Training LOSS: 10.94517 Training ACC: 0.9427
-[RESULT]  :Epoch     3 Training LOSS: 6.8772 Training ACC: 0.95734
-[RESULT]  :Epoch     4 Training LOSS: 4.60425 Training ACC: 0.96904
-[RESULT]  :Epoch     4 validation LOSS: 8.98584 validation ACC: 0.949
-[RESULT]  :Epoch     5 Training LOSS: 3.0921 Training ACC: 0.9762
-[RESULT]  :Epoch     6 Training LOSS: 2.23466 Training ACC: 0.9823
-[RESULT]  :Epoch     7 Training LOSS: 1.5305 Training ACC: 0.98742
-[RESULT]  :Epoch     8 Training LOSS: 1.20663 Training ACC: 0.98948
-[RESULT]  :Epoch     9 Training LOSS: 0.912 Training ACC: 0.99196
-[RESULT]  :Epoch     9 validation LOSS: 6.45581 validation ACC: 0.9603
+[RESULT]  :Epoch     1 Training LOSS: 100.98187 Training ACC: 0.79366
