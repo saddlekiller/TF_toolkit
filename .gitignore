@@ -3,3 +3,6 @@
 *.txt
 data
 tensorboard
+models/*/models
+models/*/nice_models
+models/*/LOGS

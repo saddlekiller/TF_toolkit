@@ -95,6 +95,7 @@ def summary_assertion(config, needSummary):
     assert((len(summaries) != 0 and needSummary) or (len(summaries) == 0 and needSummary == False))
     logging_io.SUCCESS_INFO('SUMMARY ASSERTION PASS')
 
-
-if __name__ == '__main__':
-    summary_assertion(json.load(open('../models/mnist_demo/model.conf', 'rb')), True)
+# def savemode_assertion(config):
+#     assert(config['save_mode'] in ['', 'save', 'restore', 'none'])
+# if __name__ == '__main__':
+#     summary_assertion(json.load(open('../models/mnist_demo/model.conf', 'rb')), True)

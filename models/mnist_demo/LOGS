@@ -1,4 +1,6 @@
 [SUCCESS] :GRAPH ASSERTION PASS
+[SUCCESS] :RUN MODE ASSERTION PASS
+[DEBUG]   :Running in validation mode!
 [SUCCESS] :DTYPE ASSERTION PASS
 [SUCCESS] :DTYPE ASSERTION PASS
 [SUCCESS] :ACTIVATION ASSERTION PASS
@@ -37,4 +39,5 @@ input: "^Adam/Assign"
 input: "^Adam/Assign_1"
 
 [BUILD]   :Tensor("Sum:0", shape=(), dtype=float32)
-[RESULT]  :Epoch     1 Training LOSS: 100.98187 Training ACC: 0.79366
+[RESULT]  :Epoch     1 Training LOSS: 0.5731 Training ACC: 0.99562
+[RESULT]  :Epoch     1 validation LOSS: 6.28452 validation ACC: 0.962
