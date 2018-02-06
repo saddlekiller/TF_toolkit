@@ -8,15 +8,15 @@ from logging_io import *
 import shutil
 import os
 
-def basic_builder(data_conf_dir, model_conf_dir, data_provider, round_val=5, saveLOG=True, needSummary = False):
+def basic_builder(data_conf_dir, model_conf_dir, data_provider, round_val=5, saveLOG=True, needSummary = False, isAutoEncoder = False):
 
     data_conf = json.load(open(data_conf_dir, 'r'))
     model_conf = json.load(open(model_conf_dir, 'r'))
     graph_assertion(model_conf['layers'])
     # savemode_assertion(model_conf['save_mode'])
     # save_mode = model_conf['save_mode']
-    train_provider = data_provider(data_conf['training_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']))
-    valid_provider = data_provider(data_conf['validation_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']))
+    train_provider = data_provider(data_conf['training_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']), isAutoEncoder = isAutoEncoder)
+    valid_provider = data_provider(data_conf['validation_filename'], data_conf['batch_size'], isShuffle = bool(data_conf['shuffle']), isAutoEncoder = isAutoEncoder)
     assert(isinstance(train_provider, dataProvider))
     assert(isinstance(valid_provider, dataProvider))
     log = {

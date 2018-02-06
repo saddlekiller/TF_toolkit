@@ -41,7 +41,7 @@ class dataProvider(object):
 
 class MNISTProvider(dataProvider):
 
-    def __init__(self, filename, batch_size, isShuffle = True, isOneHot = False):
+    def __init__(self, filename, batch_size, isShuffle = True, isOneHot = False, isAutoEncoder = False):
         self.inputs = np.load(open(filename, 'rb'))['inputs']
         self.targets = np.load(open(filename, 'rb'))['targets']
         self._filename = filename
@@ -50,6 +50,7 @@ class MNISTProvider(dataProvider):
         self._n_samples = len(self.targets)
         self.isShuffle = isShuffle
         self.isOneHot = isOneHot
+        self.isAutoEncoder = isAutoEncoder
         self._current_order = np.arange(self._n_samples)
         if self._n_samples % self._batch_size == 0:
             self._n_batches = int(self._n_samples/self._batch_size)
@@ -97,6 +98,8 @@ class MNISTProvider(dataProvider):
             batch_inputs = self.inputs[slide_index]
             batch_targets = self.targets[slide_index]
             self._current_index += 1
+            if self.isAutoEncoder:
+                return batch_inputs, batch_inputs
             return batch_inputs, batch_targets
 
     def one_hot(self):
