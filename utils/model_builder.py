@@ -64,6 +64,8 @@ def basic_builder(data_conf_dir, model_conf_dir, data_provider, round_val=5, sav
         logging_io.BUILD_INFO(accuracy)
         sess = tf.Session()
         if needSummary:
+            tf.summary.scalar('mean_loss', loss)
+            tf.summary.scalar('accuracy', accuracy)
             merged_all = tf.summary.merge_all()
             train_writer = tf.summary.FileWriter('tensorboard/train', sess.graph)
             valid_writer = tf.summary.FileWriter('tensorboard/valid')
