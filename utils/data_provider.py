@@ -200,7 +200,7 @@ class idProvider():
         self.n_batches = len(self.keys)
         self.reset()
 
-        
+
 class KerasSeq2SeqDataProvider():
 
     def __init__(self, filename, batch_size, label_map_dir, dictionary_dir, max_word):
@@ -255,6 +255,8 @@ class KerasSeq2SeqDataProvider():
             splited = [int(i) for i in line.split()]
             tag = splited[0]
             words = splited[1:]
+            if len(words) > self.max_word:
+                words = words[:self.max_word]
             self.corpus['inputs'][index] = words
             self.corpus['targets'][index] = tag
         if self._n_samples % self.batch_size == 0:
@@ -271,6 +273,9 @@ class KerasSeq2SeqDataProvider():
             temp = np.zeros((self.max_word, self._n_voc_size))
             for j in range(n_words):
                 temp[j, ids[i][j]] = 1.0
+            if n_words < self.max_word:
+                for j in range(n_words, self.max_word):
+                    temp[j, self.dictionary.index('<END>')] = 1.0
             results[i] = temp
         return np.array(results)
 

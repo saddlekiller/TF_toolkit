@@ -30,7 +30,8 @@ from keras.models import Sequential
 from keras.layers.recurrent import LSTM
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.core import Dense, RepeatVector
-
+from keras.layers.embeddings import Embedding
+from seq2seq.layers.decoders import LSTMDecoder, LSTMDecoder2, AttentionDecoder
 
 def build_model(input_size, max_out_seq_len, hidden_size):
 
@@ -42,16 +43,21 @@ def build_model(input_size, max_out_seq_len, hidden_size):
     model.compile(loss="mse", optimizer='adam')
     return model
 
-
-
-
-
 if __name__ == '__main__':
 
     filename = '../../Basic_Tensorflow/corpus/anonymous_raw_poi_train_trimmed.txt'
     label_map_dir = '../../Basic_Tensorflow/corpus/raw_poilabel_map.npz'
     dictionary_dir = '../../Basic_Tensorflow/corpus/raw_poiwords.dict'
-
     provider = KerasSeq2SeqDataProvider(filename, 50, label_map_dir, dictionary_dir, 30)
+    voc_size = provider._n_voc_size
+    tag_size = provider._n_classes
+    hidden_dim = 128
+    max_in_seq_len = 30
+    max_out_seq_len = 30
+
+    # encoder = LSTM(hidden_dim, return_sequences=True)
+    # decoder = AttentionDecoder(hidden_dim=hidden_dim, output_dim=hidden_dim, output_length=max_out_seq_len, state_input=False, return_sequences=True)
+    # model = Sequential()
+    # model.add(Embedding(voc_size, hidden_dim, input_length=))
     for batch_input, batch_target in provider:
         break
