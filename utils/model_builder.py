@@ -9,6 +9,8 @@ import shutil
 import os
 from tensorflow.contrib.seq2seq import *
 from tensorflow.python.layers.core import Dense
+import sys
+from tools import *
 
 def basic_builder(data_conf_dir, model_conf_dir, data_provider, round_val=5, saveLOG=True, needSummary = False, isAutoEncoder = False):
 
@@ -307,19 +309,40 @@ if __name__ == '__main__':
     corpus_dir = '../../Basic_Tensorflow/corpus/'
     label_map = pickle.load(open(corpus_dir + 'raw_poilabel_map.npz', 'rb'))
     dictionary = pickle.load(open(corpus_dir + 'raw_poiwords.dict', 'rb'))
+
+    # label_map = pickle.load(open(corpus_dir + 'label_map.npz', 'rb'))
+    # dictionary = pickle.load(open(corpus_dir + 'words.dict', 'rb'))
     max_word = 35
     voc_size = len(dictionary)
     embedding_size = 128
     provider = idProvider(corpus_dir + 'anonymous_raw_poi_train.txt', 50) #anonymous_raw_poi_train.txt
+    # provider = idProvider(corpus_dir + 'anouymous_corpus_full_train.txt', 50) #.txt
+
 
 
     graph = tf.Graph()
     with graph.as_default():
+
         model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
+        saver = tf.train.Saver(write_version = tf.train.SaverDef.V1)
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
-        for i in range(20):
+        for i in range(1):
             for length, batch_input, batch_targets in provider:
                 feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
                 _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
-            logging_io.DEBUG_INFO('LOSS is : ' + str(loss))
+                break
+            logging_io.DEBUG_INFO('LOSS is ' + str(loss))
+        saver.save(sess, '../models/model.ckpt', global_step=i)
+        sess1 = tf.Session()
+        saver1 = tf.train.Saver()
+        saver1.restore(sess1, '../models/model.ckpt-0')
+        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
+    # if 1 == 1:
+        while(True):
+            sentence = str(input('sentence: '))
+            if sentence == 'q':
+                sys.exit()
+            ids = raw2ids('<BEGIN> '+' '.join([s for s in sentence])+' <END>')
+            p = sess.run([mode2.prob], feed_dict = {start_tokens:['<BEGIN>'], end_token:'<END>'})
+            print(p)
