@@ -323,17 +323,17 @@ if __name__ == '__main__':
     graph = tf.Graph()
     with graph.as_default():
 
-        model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
-        saver = tf.train.Saver(write_version = tf.train.SaverDef.V1)
-        sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
-        for i in range(1):
-            for length, batch_input, batch_targets in provider:
-                feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
-                _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
-                break
-            logging_io.DEBUG_INFO('LOSS is ' + str(loss))
-        saver.save(sess, '../models/model.ckpt', global_step=i)
+        # model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
+        # saver = tf.train.Saver(write_version = tf.train.SaverDef.V1)
+        # sess = tf.Session()
+        # sess.run(tf.global_variables_initializer())
+        # for i in range(1):
+        #     for length, batch_input, batch_targets in provider:
+        #         feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
+        #         _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
+        #         break
+        #     logging_io.DEBUG_INFO('LOSS is ' + str(loss))
+        # saver.save(sess, '../models/model.ckpt', global_step=i)
         sess1 = tf.Session()
         saver1 = tf.train.Saver()
         saver1.restore(sess1, '../models/model.ckpt-0')
