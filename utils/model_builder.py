@@ -250,15 +250,15 @@ class Seq2SeqModel(object):
         self.input_x = tf.placeholder(tf.int32, shape=[None, None], name='input_ids')
 
         # define embedding layer
-        with tf.variable_scope('embedding', reuse=True):
+        with tf.variable_scope('embedding', reuse=tf.AUTO_REUSE):
             encoder_embedding = tf.Variable(tf.truncated_normal(shape=[encoder_vocab_size, embedding_dim], stddev=0.1),
                 name='encoder_embedding')
             decoder_embedding = tf.Variable(tf.truncated_normal(shape=[decoder_vocab_size, embedding_dim], stddev=0.1),
                 name='decoder_embedding')
 
         # define encoder
-        with tf.variable_scope('encoder', reuse=True):
-            encoder = self._get_simple_lstm(rnn_size, layer_size)
+        with tf.variable_scope('encoder', reuse=tf.AUTO_REUSE):
+            encoder = self._get_simple_lstm(rnn_size)
 
         with tf.device('/cpu:0'):
             input_x_embedded = tf.nn.embedding_lookup(encoder_embedding, self.input_x)
@@ -277,9 +277,9 @@ class Seq2SeqModel(object):
                 target_embeddeds = tf.nn.embedding_lookup(decoder_embedding, self.target_ids)
             helper = TrainingHelper(target_embeddeds, self.decoder_seq_length)
 
-        with tf.variable_scope('decoder', reuse=True):
+        with tf.variable_scope('decoder', reuse=tf.AUTO_REUSE):
             fc_layer = Dense(decoder_vocab_size)
-            decoder_cell = self._get_simple_lstm(rnn_size, layer_size)
+            decoder_cell = self._get_simple_lstm(rnn_size)
             decoder = BasicDecoder(decoder_cell, helper, encoder_state, fc_layer)
 
         logits, final_state, final_sequence_lengths = dynamic_decode(decoder)
@@ -301,9 +301,11 @@ class Seq2SeqModel(object):
         else:
             self.prob = tf.nn.softmax(logits)
 
-    def _get_simple_lstm(self, rnn_size, layer_size):
-        lstm_layers = [tf.contrib.rnn.LSTMCell(rnn_size) for _ in np.arange(layer_size)]
-        return tf.contrib.rnn.MultiRNNCell(lstm_layers)
+    def _get_simple_lstm(self, rnn_size):
+        return tf.contrib.rnn.BasicLSTMCell(rnn_size)
+        # with tf.variable_scope(name):
+        #     lstm_layers = [tf.contrib.rnn.LSTMCell(rnn_size) for _ in np.arange(layer_size)]
+        # return tf.contrib.rnn.MultiRNNCell(lstm_layers)
 
 if __name__ == '__main__':
     corpus_dir = '../../Basic_Tensorflow/corpus/'
