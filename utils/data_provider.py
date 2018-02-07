@@ -200,6 +200,85 @@ class idProvider():
         self.n_batches = len(self.keys)
         self.reset()
 
+        
+class KerasSeq2SeqDataProvider():
+
+    def __init__(self, filename, batch_size, label_map_dir, dictionary_dir, max_word):
+        self.filename = filename
+        self.batch_size = batch_size
+        self._currentPosition = 0
+        self.label_map_dir = label_map_dir
+        self.dictionary_dir = dictionary_dir
+        self.max_word = max_word
+        self.loadCorpus()
+
+    def reset(self):
+        self._currentOrder = np.arange(self._n_samples)
+        self.new_epoch()
+
+    def new_epoch(self):
+        np.random.shuffle(self._currentOrder)
+        self._currentPosition = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._currentPosition >= self._n_batches:
+            self.new_epoch()
+            raise StopIteration
+        if self._currentPosition == self._n_batches - 1:
+            batch_input = self.vocIndex2vector(self.corpus['inputs'][self._currentPosition*self.batch_size:])
+            batch_target = self.tagIndex2vector(self.corpus['targets'][self._currentPosition*self.batch_size:])
+        else:
+            batch_input = self.vocIndex2vector(self.corpus['inputs'][self._currentPosition*self.batch_size:(self._currentPosition+1)*self.batch_size])
+            batch_target = self.tagIndex2vector(self.corpus['targets'][self._currentPosition*self.batch_size:(self._currentPosition+1)*self.batch_size])
+        self._currentPosition += 1
+        logging_io.DEBUG_INFO(batch_input.shape)
+        logging_io.DEBUG_INFO(batch_target.shape)
+        return batch_input, batch_target
+
+    def next(self):
+        return self.__next__()
+
+    def loadCorpus(self):
+        self.label_map = pickle.load(open(self.label_map_dir, 'rb'))
+        self.dictionary = pickle.load(open(self.dictionary_dir, 'rb'))
+        lines = open(self.filename).readlines()
+        self._n_samples = len(lines)
+        self._n_voc_size = len(self.dictionary)
+        self._n_classes = len(self.label_map)
+        self.corpus = dict()
+        self.corpus['inputs'] = [None]*self._n_samples
+        self.corpus['targets'] = [None]*self._n_samples
+        for line, index in zip(lines, range(self._n_samples)):
+            splited = [int(i) for i in line.split()]
+            tag = splited[0]
+            words = splited[1:]
+            self.corpus['inputs'][index] = words
+            self.corpus['targets'][index] = tag
+        if self._n_samples % self.batch_size == 0:
+            self._n_batches = int(self._n_samples / self.batch_size)
+        else:
+            self._n_batches = int(self._n_samples / self.batch_size) + 1
+        self.reset()
+
+    def vocIndex2vector(self, ids):
+        n_sentence = len(ids)
+        results = [None]*n_sentence
+        for i in range(n_sentence):
+            n_words = len(ids[i])
+            temp = np.zeros((self.max_word, self._n_voc_size))
+            for j in range(n_words):
+                temp[j, ids[i][j]] = 1.0
+            results[i] = temp
+        return np.array(results)
+
+    def tagIndex2vector(self, tags):
+        results = np.zeros((len(tags), self._n_classes))
+        for i in range(len(tags)):
+            results[i][tags[i]] = 1.0
+        return np.array(results)
 
 # if __name__ == '__main__':
 #

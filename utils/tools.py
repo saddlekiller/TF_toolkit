@@ -29,10 +29,10 @@ def raw2ids(sentence, dictionary):
 def ids2raw(ids, dictionary):
     try:
         sentence = ''.join([dictionary[i] for i in ids])
+        return sentence
     except:
         logging_io.ERROR_INFO('Some words are not included in vocabulary, please check it!')
-    return sentence
-
+    return None
 
 # if __name__ == '__main__':
 #     corpus_dir = '../../Basic_Tensorflow/corpus/'

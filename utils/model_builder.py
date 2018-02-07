@@ -269,6 +269,10 @@ class Seq2SeqModel(object):
         if is_inference:
             self.start_tokens = tf.placeholder(tf.int32, shape=[None], name='start_tokens')
             self.end_token = tf.placeholder(tf.int32, name='end_token')
+            # self.start_tokens = start
+            # self.end_token = end
+            # logging_io.WARNING_INFO(str(self.start_tokens))
+            # logging_io.WARNING_INFO(str(self.end_token))
             helper = GreedyEmbeddingHelper(decoder_embedding, self.start_tokens, self.end_token)
         else:
             self.target_ids = tf.placeholder(tf.int32, shape=[None, None], name='target_ids')
@@ -307,16 +311,16 @@ class Seq2SeqModel(object):
 
 if __name__ == '__main__':
     corpus_dir = '../../Basic_Tensorflow/corpus/'
-    label_map = pickle.load(open(corpus_dir + 'raw_poilabel_map.npz', 'rb'))
-    dictionary = pickle.load(open(corpus_dir + 'raw_poiwords.dict', 'rb'))
+    # label_map = pickle.load(open(corpus_dir + 'raw_poilabel_map.npz', 'rb'))
+    # dictionary = pickle.load(open(corpus_dir + 'raw_poiwords.dict', 'rb'))
 
-    # label_map = pickle.load(open(corpus_dir + 'label_map.npz', 'rb'))
-    # dictionary = pickle.load(open(corpus_dir + 'words.dict', 'rb'))
+    label_map = pickle.load(open(corpus_dir + 'label_map.npz', 'rb'))
+    dictionary = pickle.load(open(corpus_dir + 'words.dict', 'rb'))
     max_word = 35
     voc_size = len(dictionary)
     embedding_size = 128
-    provider = idProvider(corpus_dir + 'anonymous_raw_poi_train.txt', 50) #anonymous_raw_poi_train.txt
-    # provider = idProvider(corpus_dir + 'anouymous_corpus_full_train.txt', 50) #.txt
+    # provider = idProvider(corpus_dir + 'anonymous_raw_poi_train.txt', 50) #anonymous_raw_poi_train.txt
+    provider = idProvider(corpus_dir + 'anouymous_corpus_full_train.txt', 50) #.txt
 
 
 
@@ -334,15 +338,19 @@ if __name__ == '__main__':
         #         break
         #     logging_io.DEBUG_INFO('LOSS is ' + str(loss))
         # saver.save(sess, '../models/model.ckpt', global_step=i)
-        sess1 = tf.Session()
-        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
-        saver1 = tf.train.Saver()
-        saver1.restore(sess1, '../models/model.ckpt-0')
-    # if 1 == 1:
-        while(True):
-            sentence = str(input('sentence: '))
-            if sentence == 'q':
-                sys.exit()
-            ids = raw2ids('<BEGIN> '+' '.join([s for s in sentence])+' <END>')
-            p = sess1.run([mode2.prob], feed_dict = {start_tokens:[dictionary.index('<BEGIN>')], end_token:dictionary.index('<END>')})
-            print(p)
+    #     start = dictionary.index('<BEGIN>')
+    #     end = dictionary.index('<END>')
+    #     sess1 = tf.Session()
+    #     model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, [start], end, is_inference = True)
+    #     saver1 = tf.train.Saver()
+    #     saver1.restore(sess1, '../models/model.ckpt-0')
+    # # if 1 == 1:
+    #     while(True):
+    #         sentence = str(input('sentence: '))
+    #         if sentence == 'q':
+    #             sys.exit()
+    #         ids = raw2ids('<BEGIN> '+' '.join([s for s in sentence])+' <END>')
+    #         p = sess1.run([mode2.prob], feed_dict = {model2.input_x: [ids]})
+    #         print(p)
+        # print(dictionary.index('<END>'))
+        # print(dictionary.index('<BEGIN>'))
