@@ -245,20 +245,20 @@ class Model(object):
 class Seq2SeqModel(object):
 
     def __init__(self, rnn_size, layer_size, encoder_vocab_size,
-        decoder_vocab_size, embedding_dim, grad_clip, is_inference=False, reuse = False):
+        decoder_vocab_size, embedding_dim, grad_clip, is_inference=False):
         # define inputs
         self.input_x = tf.placeholder(tf.int32, shape=[None, None], name='input_ids')
 
         # define embedding layer
-        with tf.variable_scope('embedding', reuse=reuse):
+        with tf.variable_scope('embedding'):
             encoder_embedding = tf.Variable(tf.truncated_normal(shape=[encoder_vocab_size, embedding_dim], stddev=0.1),
                 name='encoder_embedding')
             decoder_embedding = tf.Variable(tf.truncated_normal(shape=[decoder_vocab_size, embedding_dim], stddev=0.1),
                 name='decoder_embedding')
 
         # define encoder
-        with tf.variable_scope('encoder', reuse=reuse):
-            encoder = self._get_simple_lstm(rnn_size, 'encoder')
+        with tf.variable_scope('encoder'):
+            encoder = self._get_simple_lstm(rnn_size, layer_size)
 
         with tf.device('/cpu:0'):
             input_x_embedded = tf.nn.embedding_lookup(encoder_embedding, self.input_x)
@@ -277,9 +277,9 @@ class Seq2SeqModel(object):
                 target_embeddeds = tf.nn.embedding_lookup(decoder_embedding, self.target_ids)
             helper = TrainingHelper(target_embeddeds, self.decoder_seq_length)
 
-        with tf.variable_scope('decoder', reuse=reuse):
+        with tf.variable_scope('decoder'):
             fc_layer = Dense(decoder_vocab_size)
-            decoder_cell = self._get_simple_lstm(rnn_size, 'decoder')
+            decoder_cell = self._get_simple_lstm(rnn_size, layer_size)
             decoder = BasicDecoder(decoder_cell, helper, encoder_state, fc_layer)
 
         logits, final_state, final_sequence_lengths = dynamic_decode(decoder)
@@ -301,13 +301,9 @@ class Seq2SeqModel(object):
         else:
             self.prob = tf.nn.softmax(logits)
 
-    def _get_simple_lstm(self, rnn_size, name):
-        with tf.variable_scope(name):
-            cell = tf.contrib.rnn.BasicLSTMCell(rnn_size)
-        return cell
-        # with tf.variable_scope(name):
-        #     lstm_layers = [tf.contrib.rnn.LSTMCell(rnn_size) for _ in np.arange(layer_size)]
-        # return tf.contrib.rnn.MultiRNNCell(lstm_layers)
+    def _get_simple_lstm(self, rnn_size, layer_size):
+        lstm_layers = [tf.contrib.rnn.LSTMCell(rnn_size) for _ in np.arange(layer_size)]
+        return tf.contrib.rnn.MultiRNNCell(lstm_layers)
 
 if __name__ == '__main__':
     corpus_dir = '../../Basic_Tensorflow/corpus/'
@@ -327,21 +323,21 @@ if __name__ == '__main__':
     graph = tf.Graph()
     with graph.as_default():
 
-        model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False, False)
+        # model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
         # saver = tf.train.Saver(write_version = tf.train.SaverDef.V1)
-        sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
-        for i in range(1):
-            for length, batch_input, batch_targets in provider:
-                feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
-                _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
-                break
-            logging_io.DEBUG_INFO('LOSS is ' + str(loss))
+        # sess = tf.Session()
+        # sess.run(tf.global_variables_initializer())
+        # for i in range(1):
+        #     for length, batch_input, batch_targets in provider:
+        #         feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
+        #         _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
+        #         break
+        #     logging_io.DEBUG_INFO('LOSS is ' + str(loss))
         # saver.save(sess, '../models/model.ckpt', global_step=i)
-        # sess1 = tf.Session()
-        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True, True)
-        # saver1 = tf.train.Saver()
-        # saver1.restore(sess1, '../models/model.ckpt-0')
+        sess1 = tf.Session()
+        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
+        saver1 = tf.train.Saver()
+        saver1.restore(sess1, '../models/model.ckpt-0')
     # if 1 == 1:
         while(True):
             sentence = str(input('sentence: '))
