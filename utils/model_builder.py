@@ -250,14 +250,14 @@ class Seq2SeqModel(object):
         self.input_x = tf.placeholder(tf.int32, shape=[None, None], name='input_ids')
 
         # define embedding layer
-        with tf.variable_scope('embedding'):
+        with tf.variable_scope('embedding', reuse=True):
             encoder_embedding = tf.Variable(tf.truncated_normal(shape=[encoder_vocab_size, embedding_dim], stddev=0.1),
                 name='encoder_embedding')
             decoder_embedding = tf.Variable(tf.truncated_normal(shape=[decoder_vocab_size, embedding_dim], stddev=0.1),
                 name='decoder_embedding')
 
         # define encoder
-        with tf.variable_scope('encoder'):
+        with tf.variable_scope('encoder', reuse=True):
             encoder = self._get_simple_lstm(rnn_size, layer_size)
 
         with tf.device('/cpu:0'):
@@ -277,7 +277,7 @@ class Seq2SeqModel(object):
                 target_embeddeds = tf.nn.embedding_lookup(decoder_embedding, self.target_ids)
             helper = TrainingHelper(target_embeddeds, self.decoder_seq_length)
 
-        with tf.variable_scope('decoder'):
+        with tf.variable_scope('decoder', reuse=True):
             fc_layer = Dense(decoder_vocab_size)
             decoder_cell = self._get_simple_lstm(rnn_size, layer_size)
             decoder = BasicDecoder(decoder_cell, helper, encoder_state, fc_layer)
@@ -323,21 +323,21 @@ if __name__ == '__main__':
     graph = tf.Graph()
     with graph.as_default():
 
-        # model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
+        model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
         # saver = tf.train.Saver(write_version = tf.train.SaverDef.V1)
-        # sess = tf.Session()
-        # sess.run(tf.global_variables_initializer())
-        # for i in range(1):
-        #     for length, batch_input, batch_targets in provider:
-        #         feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
-        #         _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
-        #         break
-        #     logging_io.DEBUG_INFO('LOSS is ' + str(loss))
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        for i in range(1):
+            for length, batch_input, batch_targets in provider:
+                feed_dict = {model.input_x:batch_input, model.target_ids:batch_input, model.decoder_seq_length:[length]*len(batch_input)}
+                _, loss = sess.run([model.train_op, model.cost], feed_dict = feed_dict)
+                break
+            logging_io.DEBUG_INFO('LOSS is ' + str(loss))
         # saver.save(sess, '../models/model.ckpt', global_step=i)
-        sess1 = tf.Session()
+        # sess1 = tf.Session()
         model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
-        saver1 = tf.train.Saver()
-        saver1.restore(sess1, '../models/model.ckpt-0')
+        # saver1 = tf.train.Saver()
+        # saver1.restore(sess1, '../models/model.ckpt-0')
     # if 1 == 1:
         while(True):
             sentence = str(input('sentence: '))
