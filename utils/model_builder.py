@@ -335,14 +335,14 @@ if __name__ == '__main__':
         #     logging_io.DEBUG_INFO('LOSS is ' + str(loss))
         # saver.save(sess, '../models/model.ckpt', global_step=i)
         sess1 = tf.Session()
+        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
         saver1 = tf.train.Saver()
         saver1.restore(sess1, '../models/model.ckpt-0')
-        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
     # if 1 == 1:
         while(True):
             sentence = str(input('sentence: '))
             if sentence == 'q':
                 sys.exit()
             ids = raw2ids('<BEGIN> '+' '.join([s for s in sentence])+' <END>')
-            p = sess.run([mode2.prob], feed_dict = {start_tokens:['<BEGIN>'], end_token:'<END>'})
+            p = sess1.run([mode2.prob], feed_dict = {start_tokens:['<BEGIN>'], end_token:'<END>'})
             print(p)
