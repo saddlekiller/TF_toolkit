@@ -245,19 +245,19 @@ class Model(object):
 class Seq2SeqModel(object):
 
     def __init__(self, rnn_size, layer_size, encoder_vocab_size,
-        decoder_vocab_size, embedding_dim, grad_clip, is_inference=False):
+        decoder_vocab_size, embedding_dim, grad_clip, is_inference=False, reuse = False):
         # define inputs
         self.input_x = tf.placeholder(tf.int32, shape=[None, None], name='input_ids')
 
         # define embedding layer
-        with tf.variable_scope('embedding', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('embedding', reuse=reuse):
             encoder_embedding = tf.Variable(tf.truncated_normal(shape=[encoder_vocab_size, embedding_dim], stddev=0.1),
                 name='encoder_embedding')
             decoder_embedding = tf.Variable(tf.truncated_normal(shape=[decoder_vocab_size, embedding_dim], stddev=0.1),
                 name='decoder_embedding')
 
         # define encoder
-        with tf.variable_scope('encoder', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('encoder', reuse=reuse):
             encoder = self._get_simple_lstm(rnn_size)
 
         with tf.device('/cpu:0'):
@@ -277,7 +277,7 @@ class Seq2SeqModel(object):
                 target_embeddeds = tf.nn.embedding_lookup(decoder_embedding, self.target_ids)
             helper = TrainingHelper(target_embeddeds, self.decoder_seq_length)
 
-        with tf.variable_scope('decoder', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('decoder', reuse=reuse):
             fc_layer = Dense(decoder_vocab_size)
             decoder_cell = self._get_simple_lstm(rnn_size)
             decoder = BasicDecoder(decoder_cell, helper, encoder_state, fc_layer)
@@ -325,7 +325,7 @@ if __name__ == '__main__':
     graph = tf.Graph()
     with graph.as_default():
 
-        model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False)
+        model = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, False, False)
         # saver = tf.train.Saver(write_version = tf.train.SaverDef.V1)
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
@@ -337,7 +337,7 @@ if __name__ == '__main__':
             logging_io.DEBUG_INFO('LOSS is ' + str(loss))
         # saver.save(sess, '../models/model.ckpt', global_step=i)
         # sess1 = tf.Session()
-        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True)
+        model2 = Seq2SeqModel(64, 1, voc_size, voc_size, 100, 10, True, True)
         # saver1 = tf.train.Saver()
         # saver1.restore(sess1, '../models/model.ckpt-0')
     # if 1 == 1:
