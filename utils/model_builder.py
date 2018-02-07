@@ -258,7 +258,7 @@ class Seq2SeqModel(object):
 
         # define encoder
         with tf.variable_scope('encoder', reuse=reuse):
-            encoder = self._get_simple_lstm(rnn_size)
+            encoder = self._get_simple_lstm(rnn_size, 'encoder')
 
         with tf.device('/cpu:0'):
             input_x_embedded = tf.nn.embedding_lookup(encoder_embedding, self.input_x)
@@ -279,7 +279,7 @@ class Seq2SeqModel(object):
 
         with tf.variable_scope('decoder', reuse=reuse):
             fc_layer = Dense(decoder_vocab_size)
-            decoder_cell = self._get_simple_lstm(rnn_size)
+            decoder_cell = self._get_simple_lstm(rnn_size, 'decoder')
             decoder = BasicDecoder(decoder_cell, helper, encoder_state, fc_layer)
 
         logits, final_state, final_sequence_lengths = dynamic_decode(decoder)
@@ -301,8 +301,10 @@ class Seq2SeqModel(object):
         else:
             self.prob = tf.nn.softmax(logits)
 
-    def _get_simple_lstm(self, rnn_size):
-        return tf.contrib.rnn.BasicLSTMCell(rnn_size)
+    def _get_simple_lstm(self, rnn_size, name):
+        with tf.variable_scope(name):
+            cell = tf.contrib.rnn.BasicLSTMCell(rnn_size)
+        return cell
         # with tf.variable_scope(name):
         #     lstm_layers = [tf.contrib.rnn.LSTMCell(rnn_size) for _ in np.arange(layer_size)]
         # return tf.contrib.rnn.MultiRNNCell(lstm_layers)
