@@ -344,5 +344,5 @@ if __name__ == '__main__':
             if sentence == 'q':
                 sys.exit()
             ids = raw2ids('<BEGIN> '+' '.join([s for s in sentence])+' <END>')
-            p = sess1.run([mode2.prob], feed_dict = {start_tokens:['<BEGIN>'], end_token:['<END>']})
+            p = sess1.run([mode2.prob], feed_dict = {start_tokens:[dictionary.index('<BEGIN>')], end_token:[dictionary.index('<END>')]})
             print(p)
