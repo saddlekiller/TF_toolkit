@@ -154,13 +154,10 @@ with graph.as_default():
         except:
             pass
         print('Saving images ... ')
-        # print(values[0][0].shape)
-        # print(build_image(values[0][0], 4))
-        plt.imshow(np.array(build_image(values[0][0], 4), dtype = np.float32))
-        plt.savefig('outputs/conv1/conv1_hidden_'+str(i)+'.png')
-        plt.imshow(np.array(build_image(values[0][0], 8), dtype = np.float32))
-        plt.savefig('outputs/conv2/conv2_hidden_'+str(i)+'.png')
-        plt.imshow(np.array(build_image(values[0][0], 4), dtype = np.float32))
-        plt.savefig('outputs/pooling1/pooling1_hidden_'+str(i)+'.png')
-        plt.imshow(np.array(build_image(values[0][0], 8), dtype = np.float32))
-        plt.savefig('outputs/pooling2/pooling2_hidden_'+str(i)+'.png')
+
+
+
+        plt.imsave('outputs/conv1/conv1_hidden_'+str(i)+'.png', build_image(values[0][0], 4))
+        plt.imsave('outputs/conv2/conv2_hidden_'+str(i)+'.png', build_image(values[0][0], 8))
+        plt.imsave('outputs/pooling1/pooling1_hidden_'+str(i)+'.png', build_image(values[0][0], 4))
+        plt.imsave('outputs/pooling2/pooling2_hidden_'+str(i)+'.png', build_image(values[0][0], 8))
