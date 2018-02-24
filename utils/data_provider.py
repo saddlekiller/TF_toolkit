@@ -203,13 +203,14 @@ class idProvider():
 
 class KerasSeq2SeqDataProvider():
 
-    def __init__(self, filename, batch_size, label_map_dir, dictionary_dir, max_word):
+    def __init__(self, filename, batch_size, label_map_dir, dictionary_dir, max_word, remainIds = False):
         self.filename = filename
         self.batch_size = batch_size
         self._currentPosition = 0
         self.label_map_dir = label_map_dir
         self.dictionary_dir = dictionary_dir
         self.max_word = max_word
+        self.remainIds = remainIds
         self.loadCorpus()
 
     def reset(self):
@@ -268,15 +269,21 @@ class KerasSeq2SeqDataProvider():
     def vocIndex2vector(self, ids):
         n_sentence = len(ids)
         results = [None]*n_sentence
-        for i in range(n_sentence):
-            n_words = len(ids[i])
-            temp = np.zeros((self.max_word, self._n_voc_size))
-            for j in range(n_words):
-                temp[j, ids[i][j]] = 1.0
-            if n_words < self.max_word:
-                for j in range(n_words, self.max_word):
-                    temp[j, self.dictionary.index('<END>')] = 1.0
-            results[i] = temp
+        if self.remainIds == False:
+            for i in range(n_sentence):
+                n_words = len(ids[i])
+                temp = np.zeros((self.max_word, self._n_voc_size))
+                for j in range(n_words):
+                    temp[j, ids[i][j]] = 1.0
+                if n_words < self.max_word:
+                    for j in range(n_words, self.max_word):
+                        temp[j, self.dictionary.index('<END>')] = 1.0
+                results[i] = temp
+        else:
+            results = np.zeros((n_sentence, self.max_word)) + self.dictionary.index('<END>')
+            for i in range(n_sentence):
+                n_words = len(ids[i])
+                results[i, :n_words] = ids[i]
         return np.array(results)
 
     def tagIndex2vector(self, tags):
@@ -288,8 +295,8 @@ class KerasSeq2SeqDataProvider():
 # if __name__ == '__main__':
 #
 #     provider = MNISTProvider('../data/mnist-train.npz', 50)
-    # provider.shuffle()
-    # print(provider.inputs.shape)
-    # for train, valid in provider:
-    # print(provider)
-    #     print(train.shape, valid.shape)
+#     provider.shuffle()
+#     print(provider.inputs.shape)
+#     for train, valid in provider:
+#         print(provider)
+#         print(train.shape, valid.shape)
