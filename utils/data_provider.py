@@ -302,11 +302,11 @@ class CIFARProvider(object):
         except:
             data = np.load(filename)
         tags = data.keys()
-        self.inputs = data['inputs']
+        self.inputs = data['inputs']#[:5000]
 
         if "targets" in tags:
             self._train_mode = True
-            self.targets = data['targets']
+            self.targets = data['targets']#[:5000]
             self._label_map = data['label_map']
         else:
             self._train_mode = False
