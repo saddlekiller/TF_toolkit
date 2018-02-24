@@ -42,3 +42,33 @@ def ids2raw(ids, dictionary):
 #     ids = raw2ids(raw_sentence, dictionary)
 #     print(ids)
 #     print(ids2raw(ids, dictionary))
+
+def build_image(inputs, n_rows, bounder_size = 4):
+    height, width, channel = inputs.shape
+    height = int(height)
+    width = int(width)
+    channel = int(channel)
+    # print(int(inputs.shape[0]))
+    n_cols = int(channel / n_rows)
+    if int(channel / n_rows) != (channel / n_rows):
+        raise TypeError
+    x_size = (n_rows + 1) * bounder_size + n_rows * height
+    y_size = (n_cols + 1) * bounder_size + n_cols * width
+    # print(x_size, y_size)
+    image = np.zeros((x_size, y_size))
+    for i in range(n_rows):
+        for j in range(n_cols):
+            image[(i+1) * bounder_size + i * width: (i+1) * bounder_size + (i + 1) * width, (j+1) * bounder_size + j * height: (j+1) * bounder_size + (j + 1) * height] = inputs[:, :, i * n_cols + j]
+    return image
+    # import matplotlib.pyplot as plt
+    # plt.imshow(image)
+    # plt.show()
+
+# if __name__ == '__main__':
+#     data = []
+#     for i in range(16):
+#         temp = np.random.random((28, 28))
+#         data.append(temp)
+#     data = np.array(data).reshape([28, 28, 16])
+#     print(data.shape)
+#     build_image(data, 4)
