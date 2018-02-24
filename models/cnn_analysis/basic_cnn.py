@@ -7,7 +7,7 @@ from tools import *
 import matplotlib.pyplot as plt
 import os
 
-provider = CIFARProvider('../../data/cifar-10-valid.npz', 50)
+provider = CIFARProvider('../../data/cifar-10-valid.npz', 100)
 graph = tf.Graph()
 with graph.as_default():
     layers = dict()
@@ -108,7 +108,7 @@ with graph.as_default():
     tf.summary.scalar("acc", accuracy)
 
 
-    optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(0.001).minimize(loss)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
