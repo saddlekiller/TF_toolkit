@@ -7,7 +7,7 @@ from tools import *
 import matplotlib.pyplot as plt
 import os
 
-provider = CIFARProvider('../../data/cifar-10-valid.npz', 10)
+provider = CIFARProvider('../../data/cifar-10-valid.npz', 50)
 graph = tf.Graph()
 with graph.as_default():
     layers = dict()
@@ -119,7 +119,7 @@ with graph.as_default():
 
 
 
-    optimizer = tf.train.AdamOptimizer().minimize(loss)
+    optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
@@ -128,35 +128,35 @@ with graph.as_default():
     writer = tf.summary.FileWriter('tensorboard', sess.graph)
 
     # tf.summary.image("conv1_hidden", build_image(layers['conv1']['hidden'][0].eval(), 4).reshape([1, 132, 132, 1]))
-
+    try:
+        os.mkdir('outputs')
+        os.mkdir('outputs/conv1')
+        os.mkdir('outputs/conv2')
+        os.mkdir('outputs/pooling1')
+        os.mkdir('outputs/pooling2')
+    except:
+        pass
     sample_inputs = None
     sample_targets = None
     flag = False
     for i in range(100):
+        accs = []
+        errs = []
         for batch_inputs, batch_targets in provider:
             _, merge, err, acc = sess.run([optimizer, merged_all, loss, accuracy], feed_dict = {inputs_placeholder:batch_inputs, targets_placeholder:batch_targets})
             # print(err, acc)
+            accs.append(acc)
+            errs.append(err)
         writer.add_summary(merge, i)
         if flag == False:
             sample_inputs = batch_inputs[0].reshape([1, 32, 32, 3])
             sample_targets = batch_targets[0].reshape([1, 10])
             flag = True
-        print('Epoch %d, ERR: %f, ACC:%f '%(i, err, acc))
+        print('Epoch %d, ERR: %f, ACC:%f '%(i, np.mean(errs), np.mean(accs)))
         values = sess.run([layers['conv1']['hidden'],layers['conv2']['hidden'],layers['pooling1']['hidden'],layers['pooling2']['hidden']], feed_dict = {inputs_placeholder:sample_inputs, targets_placeholder:sample_targets})
         # writer.add_summary(merge[0], i)
         # print(values[0].shape)
-        try:
-            os.mkdir('outputs')
-            os.mkdir('outputs/conv1')
-            os.mkdir('outputs/conv2')
-            os.mkdir('outputs/pooling1')
-            os.mkdir('outputs/pooling2')
-        except:
-            pass
         print('Saving images ... ')
-
-
-
         plt.imsave('outputs/conv1/conv1_hidden_'+str(i)+'.png', build_image(values[0][0], 4))
         plt.imsave('outputs/conv2/conv2_hidden_'+str(i)+'.png', build_image(values[0][0], 8))
         plt.imsave('outputs/pooling1/pooling1_hidden_'+str(i)+'.png', build_image(values[0][0], 4))
