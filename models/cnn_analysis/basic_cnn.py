@@ -151,3 +151,13 @@ with graph.as_default():
         plt.imsave('outputs/conv2/conv2_hidden_'+str(i)+'.png', build_image(values[1][0], 8))
         plt.imsave('outputs/pooling1/pooling1_hidden_'+str(i)+'.png', build_image(values[2][0], 4))
         plt.imsave('outputs/pooling2/pooling2_hidden_'+str(i)+'.png', build_image(values[3][0], 8))
+        
+#     outputs = sess.run(layers['affine3']['hidden'], feed_dict = {inputs_placeholder:batch_inputs, targets_placeholder:batch_targets})
+#
+# f1 = plt.figure()
+# ax1 = f1.add_subplot(111)
+# ax1.imshow(outputs)
+# f2 = plt.figure()
+# ax2 = f2.add_subplot(111)
+# ax2.imshow(batch_targets)
+# plt.show()

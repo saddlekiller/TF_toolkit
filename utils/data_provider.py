@@ -403,12 +403,15 @@ class CIFARProvider(object):
 
 # if __name__ == '__main__':
 #     provider = CIFARProvider('../data/cifar-10-train.npz', 50)
+#     temp = 0
 #     for inputs, targets in provider:
 #         print(inputs.shape, targets.shape)
-#         break
+#         temp += 1
+#         if temp == 2:
+#             break
 #     import matplotlib.pyplot as plt
 #     # print(inputs[0].reshape(3,32,32).transpose([1,2,0]))
-#     for i in range(10):
+#     for i in range(50):
 #         # print(targets[i])
 #         # print(provider._label_map)
 #         plt.imshow(np.array(inputs[i], dtype = np.float32))
