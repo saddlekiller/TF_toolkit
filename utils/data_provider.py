@@ -407,11 +407,13 @@ class CIFARProvider(object):
 #         print(inputs.shape, targets.shape)
 #         break
 #     import matplotlib.pyplot as plt
-#     print(inputs[0].reshape(3,32,32).transpose([1,2,0]))
-#     print(targets[1])
-#     print(provider._label_map)
-#     plt.imshow(np.array(inputs[1], dtype = np.float32))
-#     plt.show()
+#     # print(inputs[0].reshape(3,32,32).transpose([1,2,0]))
+#     for i in range(10):
+#         # print(targets[i])
+#         # print(provider._label_map)
+#         plt.imshow(np.array(inputs[i], dtype = np.float32))
+#         plt.title(provider._label_map[np.argmax(targets[i])])
+#         plt.show()
 #
 #     provider = MNISTProvider('../data/mnist-train.npz', 50)
 #     provider.shuffle()

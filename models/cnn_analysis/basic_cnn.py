@@ -101,22 +101,11 @@ with graph.as_default():
     loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = layers[layer_names[-1]]['hidden'], labels = targets_placeholder))
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(layers[layer_names[-1]]['hidden'], 1), tf.argmax(targets_placeholder, 1)), tf.float32))
 
+    loss_sum = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits = layers[layer_names[-1]]['hidden'], labels = targets_placeholder))
+    accuracy_sum = tf.reduce_sum(tf.cast(tf.equal(tf.argmax(layers[layer_names[-1]]['hidden'], 1), tf.argmax(targets_placeholder, 1)), tf.float32))
+
     tf.summary.scalar("loss", loss)
     tf.summary.scalar("acc", accuracy)
-
-
-
-    # print(layers['conv1']['hidden'])
-    # for i in range(16):
-    #     tf.summary.image("conv1_hidden_"+str(i), layers['conv1']['hidden'][:, :, :, i:i+1])
-    #     tf.summary.image("pooling1_hidden_"+str(i), layers['pooling1']['hidden'][:, :, :, i:i+1])
-    # for i in range(64):
-    #     tf.summary.image("conv2_hidden_"+str(i), layers['conv2']['hidden'][:, :, :, i:i+1])
-    #     tf.summary.image("pooling2_hidden_"+str(i), layers['pooling2']['hidden'][:, :, :, i:i+1])
-
-    # tf.summary.image("conv2_hidden", layers['conv2']['hidden'])
-    # tf.summary.image("pooling2_hidden", layers['pooling2']['hidden'])
-
 
 
     optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
@@ -140,24 +129,25 @@ with graph.as_default():
     sample_targets = None
     flag = False
     for i in range(100):
-        accs = []
-        errs = []
+        accs = 0.0
+        errs = 0.0
         for batch_inputs, batch_targets in provider:
-            _, merge, err, acc = sess.run([optimizer, merged_all, loss, accuracy], feed_dict = {inputs_placeholder:batch_inputs, targets_placeholder:batch_targets})
+            _, merge, err, acc = sess.run([optimizer, merged_all, loss_sum, accuracy_sum], feed_dict = {inputs_placeholder:batch_inputs, targets_placeholder:batch_targets})
             # print(err, acc)
-            accs.append(acc)
-            errs.append(err)
+            accs += acc
+            errs += err
+        print('Epoch %d, ERR: %f, ACC:%f '%(i, errs/provider._n_samples, accs/provider._n_samples))
+
         writer.add_summary(merge, i)
         if flag == False:
             sample_inputs = batch_inputs[0].reshape([1, 32, 32, 3])
             sample_targets = batch_targets[0].reshape([1, 10])
             flag = True
-        print('Epoch %d, ERR: %f, ACC:%f '%(i, np.mean(errs), np.mean(accs)))
         values = sess.run([layers['conv1']['hidden'],layers['conv2']['hidden'],layers['pooling1']['hidden'],layers['pooling2']['hidden']], feed_dict = {inputs_placeholder:sample_inputs, targets_placeholder:sample_targets})
         # writer.add_summary(merge[0], i)
         # print(values[0].shape)
         print('Saving images ... ')
         plt.imsave('outputs/conv1/conv1_hidden_'+str(i)+'.png', build_image(values[0][0], 4))
-        plt.imsave('outputs/conv2/conv2_hidden_'+str(i)+'.png', build_image(values[0][0], 8))
-        plt.imsave('outputs/pooling1/pooling1_hidden_'+str(i)+'.png', build_image(values[0][0], 4))
-        plt.imsave('outputs/pooling2/pooling2_hidden_'+str(i)+'.png', build_image(values[0][0], 8))
+        plt.imsave('outputs/conv2/conv2_hidden_'+str(i)+'.png', build_image(values[1][0], 8))
+        plt.imsave('outputs/pooling1/pooling1_hidden_'+str(i)+'.png', build_image(values[2][0], 4))
+        plt.imsave('outputs/pooling2/pooling2_hidden_'+str(i)+'.png', build_image(values[3][0], 8))
