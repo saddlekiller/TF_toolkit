@@ -292,7 +292,126 @@ class KerasSeq2SeqDataProvider():
             results[i][tags[i]] = 1.0
         return np.array(results)
 
+
+class CIFARProvider(object):
+
+    def __init__(self, filename, batch_size, isShuffle = True, isOneHot = False, isAutoEncoder = False):
+
+        try:
+            data = pickle.load(open(filename, 'rb'))
+        except:
+            data = np.load(filename)
+        tags = data.keys()
+        self.inputs = data['inputs']
+
+        if "targets" in tags:
+            self._train_mode = True
+            self.targets = data['targets']
+            self._label_map = data['label_map']
+        else:
+            self._train_mode = False
+
+        self._filename = filename
+        self._current_index = 0
+        self._batch_size = batch_size
+        self._n_samples = len(self.targets)
+        self.isShuffle = isShuffle
+        self.isOneHot = isOneHot
+        self.isAutoEncoder = isAutoEncoder
+        self._current_order = np.arange(self._n_samples)
+
+        if self._train_mode:
+            if self._n_samples % self._batch_size == 0:
+                self._n_batches = int(self._n_samples/self._batch_size)
+            else:
+                self._n_batches = int(self._n_samples/self._batch_size)+1
+            self._n_classes = len(self._label_map)
+            if self.isOneHot == False:
+                self.one_hot()
+
+        if self.isShuffle == True:
+            self.shuffle()
+
+    def n_batches(self):
+        return self._n_batches
+
+    def n_samples(self):
+        return self._n_samples
+
+    def reset(self):
+        self._current_order = np.arange(self._n_samples)
+        self._new_epoch()
+        print('reset')
+
+    def _new_epoch(self):
+        self._current_index = 0
+        if self.isShuffle == True:
+            self.shuffle()
+        # print('new_epoch')
+
+    def shuffle(self):
+        np.random.shuffle(self._current_order)
+
+    def __iter__(self):
+        return self
+
+    def next():
+        return __next__(self)
+
+    def __next__(self):
+        if self._current_index >= self._n_batches:
+            self._new_epoch()
+            raise StopIteration
+        else:
+            slide_index = self._current_order[self._current_index*self._batch_size:(self._current_index+1)*self._batch_size]
+            batch_inputs = self.inputs[slide_index]
+            batch_targets = self.targets[slide_index]
+            self._current_index += 1
+            batch_inputs = batch_inputs.reshape([-1, 3, 32, 32]).transpose([0, 2, 3, 1])
+            if self.isAutoEncoder:
+                return batch_inputs, batch_inputs
+            return batch_inputs, batch_targets
+
+    def one_hot(self):
+        one_hot_res = np.zeros((self._n_samples, self._n_classes))
+        for target, i in zip(self.targets, range(self._n_samples)):
+            one_hot_res[i][int(target)] = 1.0
+        self.targets = one_hot_res
+
+    def __str__(self):
+        return logging_io.BUILD('\n{0:40}\n|{1:^38}|\n{0:40}\n'+
+                                '| {2:17}| {3:17} |\n'+
+                                '| {4:17}| {5:17} |\n'+
+                                '| {6:17}| {7:17} |\n'+
+                                '| {8:17}| {9:17} |\n'+
+                                '| {10:17}| {11:17} |\n'+
+                                '{0:40}\n'
+                                ).format('+'+'-'*38+'+',
+                                        'MNIST DATA PROVIDER',
+                                        'n_samples',
+                                        self._n_samples,
+                                        'n_batch',
+                                        self._n_batches,
+                                        'batch_size',
+                                        self._batch_size,
+                                        'shuffle',
+                                        self.isShuffle,
+                                        'one_hot',
+                                        self.isOneHot)
+
+
+
 # if __name__ == '__main__':
+#     provider = CIFARProvider('../data/cifar-10-train.npz', 50)
+#     for inputs, targets in provider:
+#         print(inputs.shape, targets.shape)
+#         break
+#     import matplotlib.pyplot as plt
+#     print(inputs[0].reshape(3,32,32).transpose([1,2,0]))
+#     print(targets[1])
+#     print(provider._label_map)
+#     plt.imshow(np.array(inputs[1], dtype = np.float32))
+#     plt.show()
 #
 #     provider = MNISTProvider('../data/mnist-train.npz', 50)
 #     provider.shuffle()
