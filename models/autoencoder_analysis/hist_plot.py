@@ -13,3 +13,12 @@ for i in range(5):
             legends.append(str(key))
         plt.legend(legends)
 plt.show()
+
+# f = plt.figure()
+# for key,i in zip(data.keys(), range(10)):
+#     ax = f.add_subplot(5,2, i + 1)
+#     temp = data[key].reshape(-1,)
+#     ax.hist(temp, bins = 100, normed = True)
+#     plt.title(str(key))
+#     plt.ylim([0,4])
+# plt.show()
