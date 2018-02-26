@@ -13,7 +13,7 @@ provider = MNISTProvider('../../data/mnist-train.npz', 50)
 input_dim = 784
 hidden_dim1 = 256
 hidden_dim2 = 64
-hidden_dim3 = 10
+hidden_dim3 = 16
 
 graph = tf.Graph()
 with graph.as_default():
@@ -54,17 +54,21 @@ with graph.as_default():
         rebuild = tf.reshape(rebuild_o3, [-1, 28, 28])
 
     loss = tf.reduce_mean((d_o3 - inputs_placeholder)**2)
-    optimizer = tf.train.AdamOptimizer(0.001).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(0.005).minimize(loss)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
+    saver = tf.train.Saver()
 
-    for i in range(10):
+    for i in range(100):
         errs = []
         for batch_inputs, batch_targets in provider:
             feed_dict = {inputs_placeholder: batch_inputs, code_placeholder:np.zeros((1, hidden_dim3))}
             _, err = sess.run([optimizer, loss], feed_dict = feed_dict)
             errs.append(err)
         print('#Epoch %d, Loss: %f'%(i, np.mean(errs)))
+    save_path = saver.save(sess, 'models/model.ckpt')
+
+    saver.restore(sess, 'models/model.ckpt')
     hidden_units = {}
     for batch_inputs, batch_targets in provider:
         feed_dict = {inputs_placeholder: batch_inputs, code_placeholder:np.zeros((1, hidden_dim3))}
@@ -74,17 +78,20 @@ with graph.as_default():
             if key not in hidden_units.keys():
                 hidden_units[key] = []
             hidden_units[key].append(feature)
-    means = [None]*hidden_dim3
+    means = [None]*10
     for key in hidden_units.keys():
         hidden_units[key] = np.array(hidden_units[key])
         means[key] = np.mean(hidden_units[key], 0)
+        print(np.mean(hidden_units[key], 0).shape)
+    means = np.array(means)
+    print(means.shape)
     feed_dict = {inputs_placeholder: batch_inputs, code_placeholder:means}
     image = sess.run(rebuild, feed_dict = feed_dict)
     print(image.shape)
     import matplotlib.pyplot as plt
     f = plt.figure()
     for i in range(10):
-        ax = f.add_subplot(5, 2, i+1)
+        ax = f.add_subplot(3, 4, i+1)
         ax.imshow(image[i])
         plt.title(i)
     plt.show()
