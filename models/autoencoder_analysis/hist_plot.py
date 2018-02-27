@@ -58,7 +58,7 @@ for l in range(10):
 
 f = plt.figure()
 for i in range(len(features[0][0])):
-    ax = f.add_subplot(3, 4, i+1)
+    ax = f.add_subplot(4, 4, i+1)
     xs = np.linspace(0, 1, 5000)
     for j in range(10):
         ys = [0]*5000
