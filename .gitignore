@@ -1,5 +1,4 @@
 *.pyc
-*.npz
 *.txt
 data
 tensorboard
