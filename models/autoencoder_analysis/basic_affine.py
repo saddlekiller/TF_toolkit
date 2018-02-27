@@ -95,4 +95,5 @@ with graph.as_default():
         ax.imshow(image[i])
         plt.title(i)
     plt.show()
-    # pickle.dump(hidden_units, open('features.npz', 'wb'))
+    pickle.dump(means, open('means.npz', 'wb'))
+    pickle.dump(hidden_units, open('features.npz', 'wb'))
