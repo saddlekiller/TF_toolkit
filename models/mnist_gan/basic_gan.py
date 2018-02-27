@@ -57,5 +57,14 @@ with graph.as_default():
             Discriminator_o3 = tf.nn.relu(tf.add(tf.matmul(Discriminator_o2, Discriminator_w3), Discriminator_b3))
             Discriminator_o  = tf.nn.relu(tf.add(tf.matmul(Discriminator_o3, Discriminator_w ), Discriminator_b ))
 
-    data_placeholder = tf.placeholder('')
-    Generator_out = Generator()
+    data_placeholder  = tf.placeholder(tf.float32, [None, input_dim])
+    prior_placeholder = tf.placeholder(tf.float32, [None, output_dim])
+    Generator_out = Generator(prior_placeholder)
+    Discriminator_fake_out = Discriminator(Generator_out)
+    Discriminator_real_out = Discriminator(data_placeholder)
+
+
+
+
+
+    
