@@ -77,7 +77,7 @@ with graph.as_default():
     Discriminator_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")
 
     Generator_optimizer     = tf.train.AdamOptimizer(0.0002, beta1 = 0.5).minimize(Generator_loss,     var_list = Generator_variables)
-    Discriminator_optimizer = tf.train.AdamOptimizer(0.0005, beta1 = 0.5).minimize(Discriminator_loss, var_list = Discriminator_variables)
+    Discriminator_optimizer = tf.train.AdamOptimizer(0.001, beta1 = 0.5).minimize(Discriminator_loss, var_list = Discriminator_variables)
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
