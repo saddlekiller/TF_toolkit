@@ -64,20 +64,20 @@ with graph.as_default():
     data_placeholder  = tf.placeholder(tf.float32, [batch_size, input_dim])
     prior_placeholder = tf.placeholder(tf.float32, [batch_size, output_dim])
 
-    Generator_out = Generator(prior_placeholder)
+    Generator_out          = Generator(prior_placeholder)
     Discriminator_fake_out = Discriminator(Generator_out)
     Discriminator_real_out = Discriminator(data_placeholder, True)
 
     Discriminator_fake_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Discriminator_fake_out, labels = tf.zeros([batch_size, 1])))
     Discriminator_real_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Discriminator_real_out, labels = tf.ones ([batch_size, 1])))
     Generator_loss          = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = Discriminator_fake_out, labels = tf.ones ([batch_size, 1])))
-    Discriminator_loss = Discriminator_fake_loss + Discriminator_real_loss
+    Discriminator_loss      = Discriminator_fake_loss + Discriminator_real_loss
 
     Generator_variables     = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Generator")
     Discriminator_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")
 
     Generator_optimizer     = tf.train.AdamOptimizer(0.0002, beta1 = 0.5).minimize(Generator_loss,     var_list = Generator_variables)
-    Discriminator_optimizer = tf.train.AdamOptimizer(0.0002, beta1 = 0.5).minimize(Discriminator_loss, var_list = Discriminator_variables)
+    Discriminator_optimizer = tf.train.AdamOptimizer(0.0005, beta1 = 0.5).minimize(Discriminator_loss, var_list = Discriminator_variables)
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
@@ -92,7 +92,7 @@ with graph.as_default():
             noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
             feed_dict = {data_placeholder: batch_inputs*2 - 1, prior_placeholder: noise}
             _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
-            for j in range(20):
+            for j in range(10):
                 _, g_loss          = sess.run([Generator_optimizer, Generator_loss]               , feed_dict = feed_dict)
             _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
             d_losses.append(d_loss)
