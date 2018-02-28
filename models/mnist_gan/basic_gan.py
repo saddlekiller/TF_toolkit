@@ -77,7 +77,7 @@ with graph.as_default():
     Discriminator_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")
 
     Generator_optimizer     = tf.train.AdamOptimizer(0.0002, beta1 = 0.5).minimize(Generator_loss,     var_list = Generator_variables)
-    Discriminator_optimizer = tf.train.AdamOptimizer(0.001, beta1 = 0.5).minimize(Discriminator_loss, var_list = Discriminator_variables)
+    Discriminator_optimizer = tf.train.AdamOptimizer(0.002, beta1 = 0.5) .minimize(Discriminator_loss, var_list = Discriminator_variables)
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
@@ -92,9 +92,9 @@ with graph.as_default():
             noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
             feed_dict = {data_placeholder: batch_inputs*2 - 1, prior_placeholder: noise}
             _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
-            for j in range(1):
-                _, g_loss      = sess.run([Generator_optimizer, Generator_loss]               , feed_dict = feed_dict)
-            _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
+            for j in range(100):
+                _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss]           , feed_dict = feed_dict)
+            # _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
             d_losses.append(d_loss)
             g_losses.append(g_loss)
         print('EPOCH %d, D_LOSS: %f, G_LOSS: %f '%(i, np.mean(d_losses), np.mean(g_losses)))
