@@ -92,8 +92,8 @@ with graph.as_default():
             noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
             feed_dict = {data_placeholder: batch_inputs*2 - 1, prior_placeholder: noise}
             _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
-            for j in range(10):
-                _, g_loss          = sess.run([Generator_optimizer, Generator_loss]               , feed_dict = feed_dict)
+            for j in range(1):
+                _, g_loss      = sess.run([Generator_optimizer, Generator_loss]               , feed_dict = feed_dict)
             _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
             d_losses.append(d_loss)
             g_losses.append(g_loss)
