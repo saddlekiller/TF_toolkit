@@ -10,7 +10,7 @@ from tensorflow.contrib.layers import *
 
 
 batch_size = 100
-provider = MNISTProvider('../../data/mnist-train.npz', batch_size, isShuffle=True)
+provider = MNISTProvider('../../data/mnist-train.npz', batch_size, isShuffle=False)
 
 output_dim = 16
 input_dim = 784
@@ -49,35 +49,11 @@ with graph.as_default():
                                 # weights_regularizer=tc.layers.l2_regularizer(2.5e-5),
                                 activation_fn=tf.nn.sigmoid)
 
-            # print(Generator_affine_1)
-            # print(Generator_deconv_1)
-            # print(Generator_deconv_2)
-            # print(Generator_deconv_3)
-            # Generator_w1 = tf.get_variable('Generator_w1', initializer = tf.truncated_normal([output_dim, 128]))
-            # Generator_b1 = tf.get_variable('Generator_b1', initializer = tf.truncated_normal([128]))
-            # Generator_k2 = tf.get_variable('Generator_w2', initializer = tf.truncated_normal([7, 7, 64, 128]))
-            # Generator_b2 = tf.get_variable('Generator_b2', initializer = tf.truncated_normal([64]))
-            # Generator_k3 = tf.get_variable('Generator_w3', initializer = tf.truncated_normal([2, 2, 16, 64]))
-            # Generator_b3 = tf.get_variable('Generator_b3', initializer = tf.truncated_normal([16]))
-            # Generator_k4 = tf.get_variable('Generator_w4', initializer = tf.truncated_normal([2, 2, 1, 16]))
-            # Generator_b4 = tf.get_variable('Generator_b4', initializer = tf.truncated_normal([1]))
-            #
-            # Generator_affine_1  = tf.nn.relu(tf.add(tf.matmul(inputs      , Generator_w1), Generator_b1))
-            # Generator_reshape_1 = tf.reshape(Generator_affine_1, [batch_size, 1, 1, 128])
-            # Generator_deconv_1  = tf.nn.relu(tf.add(tf.nn.conv2d_transpose(Generator_reshape_1, Generator_k2, [batch_size, 7, 7, 64], [1, 7, 7, 1], 'SAME'), Generator_b2))
-            # Generator_deconv_2  = tf.nn.relu(tf.add(tf.nn.conv2d_transpose(Generator_deconv_1, Generator_k3, [batch_size, 14, 14, 16], [1, 2, 2, 1], 'SAME'), Generator_b3))
-            # Generator_deconv_3  = tf.nn.sigmoid(tf.add(tf.nn.conv2d_transpose(Generator_deconv_2, Generator_k4, [batch_size, 28, 28, 1], [1, 2, 2, 1], 'SAME'), Generator_b4))
+            print(Generator_affine_1)
+            print(Generator_deconv_1)
+            print(Generator_deconv_2)
+            print(Generator_deconv_3)
 
-        #     print('*'*49)
-        #     print('*'*1 + ' '*19 + 'Generator' + ' '*19 + '*'*1)
-        #     print('*'*49)
-        #     print(Generator_affine_1)
-        #     print(Generator_reshape_1)
-        #     print(Generator_deconv_1)
-        #     print(Generator_deconv_2)
-        #     print(Generator_deconv_3)
-        #     print('*'*49)
-        #
         return Generator_deconv_3
 
     def Discriminator(inputs, reuse = False):
@@ -139,8 +115,8 @@ with graph.as_default():
     print(Generator_variables)
 
     with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-        Generator_optimizer     = tf.train.RMSPropOptimizer(0.00005).minimize(Generator_loss,     var_list = Generator_variables)
-        Discriminator_optimizer = tf.train.RMSPropOptimizer(0.00005) .minimize(Discriminator_loss, var_list = Discriminator_variables)
+        Generator_optimizer     = tf.train.RMSPropOptimizer(0.0001).minimize(Generator_loss,     var_list = Generator_variables)
+        Discriminator_optimizer = tf.train.RMSPropOptimizer(0.0001).minimize(Discriminator_loss, var_list = Discriminator_variables)
 
 
     Clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in Discriminator_variables]
