@@ -171,6 +171,6 @@ with graph.as_default():
             d_losses.append(d_loss)
             g_losses.append(g_loss)
         print('EPOCH %d, D_LOSS: %f, G_LOSS: %f '%(i, np.mean(d_losses), np.mean(g_losses)))
-        g_image = g_image.reshape([-1, 28, 28]).transpose([1,2,0])
-        merge_image = build_image(g_image, 10)
+        # g_image = g_image.reshape([-1, 28, 28, 3]).transpose([1,2,0])
+        merge_image = build_image_(g_image, 10)
         plt.imsave(str(i)+'.png', merge_image)
