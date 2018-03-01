@@ -10,7 +10,7 @@ from tensorflow.contrib.layers import *
 
 
 batch_size = 100
-provider = MNISTProvider('../../data/cifar-10-train.npz', batch_size, isShuffle=False)
+provider = CIFARProvider('../../data/cifar-10-train.npz', batch_size, isShuffle=False)
 
 output_dim = 512
 input_dim = 784
