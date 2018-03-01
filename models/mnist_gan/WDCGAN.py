@@ -128,11 +128,11 @@ with graph.as_default():
     prior_placeholder = tf.placeholder(tf.float32, [batch_size, output_dim])
     #
     Generator_out          = Generator(prior_placeholder)
-    Discriminator_fake_out = Discriminator(Generator_out)
+    Discriminator_fake_out = Discriminator(Generator_out, False)
     Discriminator_real_out = Discriminator(data_placeholder, True)
 
-    Generator_loss          = tf.reduce_mean(Discriminator_real_out)
-    Discriminator_loss      = tf.reduce_mean(Discriminator_fake_out) - tf.reduce_mean(Discriminator_real_out)
+    Generator_loss          = tf.reduce_mean(Discriminator_fake_out)
+    Discriminator_loss      = tf.reduce_mean(Discriminator_real_out) - tf.reduce_mean(Discriminator_fake_out)
 
     Generator_variables     = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Generator")
     Discriminator_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")
@@ -144,15 +144,16 @@ with graph.as_default():
 
 
     Clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in Discriminator_variables]
-    a = [var for var in tf.global_variables() if 'Discriminator' in var.name]
-    Clip = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")]
-    print('-'*50)
-    for v in Clip:
-        print(v)
-    print('-'*50)
-    for ai in a:
-        print(ai)
-    print('-'*50)
+    # a = [var for var in tf.global_variables() if 'Discriminator' in var.name]
+    # Clip = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")]
+
+    # print('-'*50)
+    # for v in Clip:
+    #     print(v)
+    # print('-'*50)
+    # for ai in a:
+    #     print(ai)
+    # print('-'*50)
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
@@ -167,8 +168,8 @@ with graph.as_default():
             for j in range(5):
                 noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
                 feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
-                sess.run(Clip)
                 _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
+                sess.run(Clip)
             noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
             feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
             _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
