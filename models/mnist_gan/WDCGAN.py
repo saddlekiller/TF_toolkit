@@ -115,30 +115,39 @@ with graph.as_default():
 
     Generator_optimizer     = tf.train.RMSPropOptimizer(0.00005).minimize(Generator_loss,     var_list = Generator_variables)
     Discriminator_optimizer = tf.train.RMSPropOptimizer(0.00005) .minimize(Discriminator_loss, var_list = Discriminator_variables)
-    Clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")]
+    Clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in Discriminator_variables]
+    # a = [var for var in tf.global_variables() if 'Discriminator' in var.name]
+    # Clip = [v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator")]
+    # print('-'*50)
+    # for v in Clip:
+    #     print(v)
+    # print('-'*50)
+    # for ai in a:
+    #     print(ai)
+    # print('-'*50)
 
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-    # merged_all = tf.summary.merge_all()
-    writer = tf.summary.FileWriter('tensorboard', sess.graph)
-
-
-    for i in range(500):
-        d_losses = []
-        g_losses = []
-        for batch_inputs, batch_targets in provider:
-            for j in range(5):
-                noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
-                feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
-                sess.run(clip)
-                _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
-            noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
-            feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
-            _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
-
-            d_losses.append(d_loss)
-            g_losses.append(g_loss)
-        print('EPOCH %d, D_LOSS: %f, G_LOSS: %f '%(i, np.mean(d_losses), np.mean(g_losses)))
-        g_image = g_image.reshape([-1, 28, 28]).transpose([1,2,0])
-        merge_image = build_image(g_image, 10)
-        plt.imsave(str(i)+'.png', merge_image)
+    # sess = tf.Session()
+    # sess.run(tf.global_variables_initializer())
+    # # merged_all = tf.summary.merge_all()
+    # writer = tf.summary.FileWriter('tensorboard', sess.graph)
+    #
+    #
+    # for i in range(500):
+    #     d_losses = []
+    #     g_losses = []
+    #     for batch_inputs, batch_targets in provider:
+    #         for j in range(5):
+    #             noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
+    #             feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
+    #             sess.run(Clip)
+    #             _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
+    #         noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
+    #         feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
+    #         _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
+    #
+    #         d_losses.append(d_loss)
+    #         g_losses.append(g_loss)
+    #     print('EPOCH %d, D_LOSS: %f, G_LOSS: %f '%(i, np.mean(d_losses), np.mean(g_losses)))
+    #     g_image = g_image.reshape([-1, 28, 28]).transpose([1,2,0])
+    #     merge_image = build_image(g_image, 10)
+    #     plt.imsave(str(i)+'.png', merge_image)
