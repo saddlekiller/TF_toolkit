@@ -161,11 +161,11 @@ with graph.as_default():
         for batch_inputs, batch_targets in provider:
             for j in range(5):
                 noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
-                feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
+                feed_dict = {data_placeholder: batch_inputs, prior_placeholder: noise}
                 _, d_loss          = sess.run([Discriminator_optimizer, Discriminator_loss]       , feed_dict = feed_dict)
                 sess.run(Clip)
             noise = np.random.uniform(-1, 1, [batch_size, output_dim]).astype(np.float32)
-            feed_dict = {data_placeholder: batch_inputs.reshape(-1, 28, 28, 1), prior_placeholder: noise}
+            feed_dict = {data_placeholder: batch_inputs, prior_placeholder: noise}
             _, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
 
             d_losses.append(d_loss)
