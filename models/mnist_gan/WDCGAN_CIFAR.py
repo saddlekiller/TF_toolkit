@@ -115,7 +115,7 @@ with graph.as_default():
             print(Discriminator_affine_3)
             print('*'*53)
 
-        # return Discriminator_affine_3
+        return Discriminator_affine_3
 
 
     data_placeholder  = tf.placeholder(tf.float32, [batch_size, 32, 32, 3])
