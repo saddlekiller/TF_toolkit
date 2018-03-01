@@ -18,6 +18,8 @@ hidden_dim1 = 512
 hidden_dim2 = 128
 hidden_dim3 = 64
 
+def leaky_relu(x, alpha=0.2):
+    return tf.maximum(tf.minimum(0.0, alpha * x), x)
 
 
 graph = tf.Graph()
@@ -35,10 +37,10 @@ with graph.as_default():
             Generator_w  = tf.get_variable('Generator_w' , initializer = tf.truncated_normal([hidden_dim1, input_dim]))
             Generator_b  = tf.get_variable('Generator_b' , initializer = tf.truncated_normal([input_dim]))
 
-            Generator_o1 = tf.nn.tanh(tf.add(tf.matmul(inputs      , Generator_w1), Generator_b1))
-            Generator_o2 = tf.nn.tanh(tf.add(tf.matmul(Generator_o1, Generator_w2), Generator_b2))
-            Generator_o3 = tf.nn.tanh(tf.add(tf.matmul(Generator_o2, Generator_w3), Generator_b3))
-            Generator_o  = tf.nn.tanh(tf.add(tf.matmul(Generator_o3, Generator_w ), Generator_b ))
+            Generator_o1 = tf.nn.relu(tf.add(tf.matmul(inputs      , Generator_w1), Generator_b1))
+            Generator_o2 = tf.nn.relu(tf.add(tf.matmul(Generator_o1, Generator_w2), Generator_b2))
+            Generator_o3 = tf.nn.relu(tf.add(tf.matmul(Generator_o2, Generator_w3), Generator_b3))
+            Generator_o  = tf.nn.sigmoid(tf.add(tf.matmul(Generator_o3, Generator_w ), Generator_b ))
 
         return Generator_o
 
@@ -54,9 +56,9 @@ with graph.as_default():
             Discriminator_w  = tf.get_variable('Discriminator_w', initializer = tf.truncated_normal([hidden_dim3, 1]))
             Discriminator_b  = tf.get_variable('Discriminator_b', initializer = tf.truncated_normal([1]))
 
-            Discriminator_o1 = tf.nn.tanh(tf.add(tf.matmul(inputs          , Discriminator_w1), Discriminator_b1))
-            Discriminator_o2 = tf.nn.tanh(tf.add(tf.matmul(Discriminator_o1, Discriminator_w2), Discriminator_b2))
-            Discriminator_o3 = tf.nn.tanh(tf.add(tf.matmul(Discriminator_o2, Discriminator_w3), Discriminator_b3))
+            Discriminator_o1 = leaky_relu(tf.add(tf.matmul(inputs          , Discriminator_w1), Discriminator_b1))
+            Discriminator_o2 = leaky_relu(tf.add(tf.matmul(Discriminator_o1, Discriminator_w2), Discriminator_b2))
+            Discriminator_o3 = leaky_relu(tf.add(tf.matmul(Discriminator_o2, Discriminator_w3), Discriminator_b3))
             Discriminator_o  = tf.identity(tf.add(tf.matmul(Discriminator_o3, Discriminator_w ), Discriminator_b ))
         return Discriminator_o
 
