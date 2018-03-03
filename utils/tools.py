@@ -92,13 +92,15 @@ def build_image_(inputs, n_rows, bounder_size = 4):
     return image
 
 
-if __name__ == '__main__':
-    data = []
-    for i in range(16):
-        temp = np.random.random((28, 28, 3))
-        data.append(temp)
-    data = np.array(data)
-    print(data.shape)
-    m = build_image_(data, 4)
-    plt.imshow(m)
-    plt.show()
+
+#
+# if __name__ == '__main__':
+    # data = []
+    # for i in range(16):
+    #     temp = np.random.random((28, 28, 3))
+    #     data.append(temp)
+    # data = np.array(data)
+    # print(data.shape)
+    # m = build_image_(data, 4)
+    # plt.imshow(m)
+    # plt.show()
