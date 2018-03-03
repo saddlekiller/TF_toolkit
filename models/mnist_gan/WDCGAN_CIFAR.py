@@ -155,7 +155,7 @@ with graph.as_default():
     writer = tf.summary.FileWriter('tensorboard', sess.graph)
 
 
-    for i in range(500):
+    for i in range(1500):
         d_losses = []
         g_losses = []
         for batch_inputs, batch_targets in provider:
