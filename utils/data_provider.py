@@ -400,8 +400,133 @@ class CIFARProvider(object):
                                         self.isOneHot)
 
 
+class PaddedSeqProvider(object):
 
-# if __name__ == '__main__':
+    def __init__(self, corpus_dir, dictionary_dir, label_map_dir, batch_size, max_word, isIndex = True, Padding = True):
+
+        self.corpus_dir = corpus_dir
+        self.dictionary_dir = dictionary_dir
+        self.label_map_dir = label_map_dir
+        self.batch_size = batch_size
+        self.isIndex = isIndex
+        self.max_word = max_word
+        self.Padding = Padding
+        if self.Padding == False:
+            raise NotImplementedError
+        self.loadCorpus()
+
+    def reset(self):
+        self._currentOrder = np.arange(self.n_samples)
+        self.new_epoch()
+
+    def new_epoch(self):
+        np.random.shuffle(self._currentOrder)
+        self._currentPosition = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._currentPosition >= self.n_batches:
+            self.new_epoch()
+            raise StopIteration
+        lines = self.corpus[self._currentPosition*self.batch_size:(self._currentPosition + 1)*self.batch_size]
+        batch_input_temp = [line.split()[1:self.max_word] for line in lines]
+        batch_target_temp = [line.split()[0] for line in lines]
+        if self.Padding == True:
+            batch_input = np.zeros((self.batch_size, self.max_word, self.voc_size))
+            batch_target = np.zeros((self.batch_size, self.n_classes))
+        else:
+            batch_input = np.zeros((len(batch_input_temp), self.max_word, self.voc_size))
+            batch_target = np.zeros((len(batch_input_temp), self.n_classes))
+        for i, j, k in zip(batch_input_temp, batch_target_temp, range(len(batch_input_temp))):
+            batch_input[k] = self.sentence2vector(i)
+            batch_target[k] = self.tagIndex2vector(j)
+        self._currentPosition += 1
+        return batch_input, batch_target
+
+    def next(self):
+        return self.__next__()
+
+    def loadCorpus(self):
+        try:
+            self.corpus = open(self.corpus_dir, encoding='utf-8').readlines()
+        except:
+            self.corpus = open(self.corpus_dir, encoding='gbk').readlines()
+        self.dictionary = pickle.load(open(self.dictionary_dir, 'rb'))
+        self.label_map = pickle.load(open(self.label_map_dir, 'rb'))
+        self.n_samples = len(self.corpus)
+        self.voc_size = len(self.dictionary)
+        self.n_classes = len(self.label_map)
+        self._currentOrder = np.arange(self.n_samples)
+        if (self.n_samples % self.batch_size) == 0:
+            self.n_batches = int(self.n_samples / self.batch_size)
+        else:
+            self.n_batches = int(self.n_samples / self.batch_size) + 1
+        self._currentPosition = 0
+
+    def sentence2vector(self, indexes):
+        res = np.array([self.vocIndex2vector(int(i)) for i in indexes])
+        if self.Padding == True:
+            n_padding = self.max_word - res.shape[0]
+            res = np.concatenate([res, np.zeros((n_padding, self.voc_size))], 0)
+        return res
+
+    def vocIndex2vector(self, ids):
+        res = np.zeros(self.voc_size)
+        res[ids] = 1
+        return res
+
+    def tagIndex2vector(self, tags):
+        res = np.zeros(self.n_classes)
+        res[int(tags)] = 1
+        return res
+
+    def tag2tagIndex(self, tag):
+        if self.isIndex:
+            return int(tag)
+        else:
+            return int(self.label_map.index(int(tag)))
+
+    def sentence2vocIndex(self, sentence):
+        return [self.voc2vocIndex(word) for word in sentence]
+
+    def voc2vocIndex(self, word):
+        if self.isIndex == True:
+            return int(word)
+        else:
+            return int(self.dictionary.index(word))
+
+    def vocIndex2voc(self, index):
+        return self.dictionary[index]
+
+    def vocIndex2sentence(self, indexes):
+        return [self.vocIndex2voc(wordIndex) for wordIndex in indexes]
+
+    def tagIndex2tag(self, index):
+        return self.label_map[index]
+
+if __name__ == '__main__':
+
+    provider = PaddedSeqProvider('../data/anonymous_raw_poi_valid_trimmed.txt', '../data/raw_poiwords.dict', '../data/raw_poilabel_map.npz', 50, 35)
+    i = 0
+    for batch_input, batch_target in provider:
+        print(batch_input.shape, batch_target.shape)
+        i += 1
+        # break
+    print(i)
+    print(provider.n_samples / 50)
+
+
+
+
+
+
+
+
+
+
+
 #     provider = CIFARProvider('../data/cifar-10-train.npz', 50)
 #     temp = 0
 #     for inputs, targets in provider:
