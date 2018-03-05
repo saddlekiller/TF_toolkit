@@ -506,7 +506,196 @@ class PaddedSeqProvider(object):
     def tagIndex2tag(self, index):
         return self.label_map[index]
 
+
+class BMWSeqProvider(object):
+
+    def __init__(self, corpus_dir, batch_size = 50, max_word = 35, isGenerate = True, isTrain = False):
+
+        self.corpus_dir = corpus_dir
+        self.batch_size = batch_size
+        self.max_word = max_word
+        self.isGenerate = isGenerate
+        self.isTrain = isTrain
+        # if self.Padding == False:
+        #     raise NotImplementedError
+        if self.isGenerate == True:
+            self.loadCorpus()
+        else:
+            self.readCorpus()
+
+    def reset(self):
+        self._currentOrder = np.arange(self.n_samples)
+        self.new_epoch()
+
+    def new_epoch(self):
+        np.random.shuffle(self._currentOrder)
+        self._currentPosition = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._currentPosition >= self.n_batches:
+            self.new_epoch()
+            raise StopIteration
+        # print(min((self._currentPosition + 1)*self.batch_size, self.n_samples))
+        batch = [self.generateVec(i) for i in range(self._currentPosition*self.batch_size, min((self._currentPosition + 1)*self.batch_size, self.n_samples))]
+        batch_sentence = []
+        batch_intent = []
+        batch_mention = []
+        batch_intent_len = []
+        batch_mention_len = []
+        for sample in batch:
+            batch_sentence.append(sample[0])
+            batch_intent.append(sample[1])
+            batch_mention.append(sample[2])
+            batch_intent_len.append(sample[3])
+            batch_mention_len.append(sample[4])
+
+        batch_sentence = np.array(batch_sentence)
+        batch_intent = np.array(batch_intent)
+        batch_mention = np.array(batch_mention)
+        batch_intent_len = np.array(batch_intent_len)
+        batch_mention_len = np.array(batch_mention_len)
+        self._currentPosition += 1
+        return batch_sentence, batch_intent, batch_mention, batch_intent_len, batch_mention_len
+
+    def next(self):
+        return self.__next__()
+
+    def loadCorpus(self):
+        try:
+            self.corpus = open(self.corpus_dir, encoding='utf-8').readlines()
+        except:
+            self.corpus = open(self.corpus_dir, encoding='gbk').readlines()
+
+        self.corpus_ = dict()
+        self.corpus_['sentences'] = []
+        self.corpus_['intents'] = []
+        self.corpus_['mentions'] = []
+        self.corpus_['intents_len'] = []
+        self.corpus_['mentions_len'] = []
+
+        if self.isTrain == True:
+            self.intent_set = set()
+            self.mention_set = set()
+            self.word_set = set()
+        else:
+            self.word_set = pickle.load(open('../../data/BMW/seq_corpus_vocabulary.npz', 'rb'))
+            self.intent_set = pickle.load(open('../../data/BMW/seq_corpus_intent.npz', 'rb'))
+            self.mention_set = pickle.load(open('../../data/BMW/seq_corpus_mention.npz', 'rb'))
+
+
+        for line in self.corpus:
+            sentence, intent, mention = line.split('#')
+            sentence = sentence.split()
+            intent = intent.split('.')
+            mention = mention.split()
+            self.corpus_['sentences'].append(sentence)
+            self.corpus_['intents'].append(intent)
+            self.corpus_['mentions'].append(mention)
+            self.corpus_['intents_len'].append(len(intent))
+            self.corpus_['mentions_len'].append(len(mention))
+
+            if self.isTrain == True:
+                for i in sentence:
+                    self.word_set.add(i)
+                for i in intent:
+                    self.intent_set.add(i)
+                for i in mention:
+                    self.mention_set.add(i)
+        if self.isTrain == True:
+            self.word_set.add('OOV')
+
+        self.corpus_['n_samples'] = len(self.corpus)
+        self.corpus_['word_set'] = list(self.word_set)
+        self.corpus_['intent_set'] = list(self.intent_set)
+        self.corpus_['mention_set'] = list(self.mention_set)
+        self.corpus_['n_word'] = len(self.word_set)
+        self.corpus_['max_intent_len'] = np.max(self.corpus_['intents_len'])
+        self.corpus_['n_intent'] = len(self.intent_set)
+        self.corpus_['n_mention'] = len(self.mention_set)
+        self.loadParameters()
+        if self.isTrain == True:
+            pickle.dump(self.corpus_, open('../../data/BMW/seq_corpus_train.npz', 'wb'))
+            pickle.dump(self.word_set, open('../../data/BMW/seq_corpus_vocabulary.npz', 'wb'))
+            pickle.dump(self.intent_set, open('../../data/BMW/seq_corpus_intent.npz', 'wb'))
+            pickle.dump(self.mention_set, open('../../data/BMW/seq_corpus_mention.npz', 'wb'))
+        else:
+            pickle.dump(self.corpus_, open('../../data/BMW/seq_corpus_valid.npz', 'wb'))
+
+    def readCorpus(self):
+        if self.isTrain == True:
+            self.corpus_ = pickle.load(open('../../data/BMW/seq_corpus_train.npz', 'rb'))
+        else:
+            self.corpus_ = pickle.load(open('../../data/BMW/seq_corpus_valid.npz', 'rb'))
+        self.loadParameters()
+
+    def loadParameters(self):
+
+        self.n_samples = self.corpus_['n_samples']
+        if self.isGenerate == True:
+            self.word_set = self.corpus_['word_set']
+            self.intent_set = self.corpus_['intent_set']
+            self.mention_set = self.corpus_['mention_set']
+        else:
+            self.word_set = pickle.load(open('../../data/BMW/seq_corpus_vocabulary.npz', 'rb'))
+            self.intent_set = pickle.load(open('../../data/BMW/seq_corpus_intent.npz', 'rb'))
+            self.mention_set = pickle.load(open('../../data/BMW/seq_corpus_mention.npz', 'rb'))
+
+        self.n_word = self.corpus_['n_word']
+        self.max_intent_len = self.corpus_['max_intent_len']
+        self.n_intent = self.corpus_['n_intent']
+        self.n_mention = self.corpus_['n_mention']
+        self._currentOrder = np.arange(self.n_samples)
+        if (self.n_samples % self.batch_size) == 0:
+            self.n_batches = int(self.n_samples / self.batch_size)
+        else:
+            self.n_batches = int(self.n_samples / self.batch_size) + 1
+        self._currentPosition = 0
+
+    def generateVec(self, index):
+        sentence = self.corpus_['sentences'][index][:self.max_word]
+        intent = self.corpus_['intents'][index]
+        mention = self.corpus_['mentions'][index][:self.max_word]
+        intent_len = self.corpus_['intents_len'][index]
+        mention_len = self.corpus_['mentions_len'][index]
+        sentence_vec = np.array([self.encoder(i, self.word_set, True) for i in sentence])
+        intent_vec = np.array([self.encoder(i, self.intent_set, False) for i in intent])
+        mention_vec = np.array([self.encoder(i, self.mention_set, False) for i in mention])
+        return self.padding(sentence_vec, 'word'), self.padding(intent_vec, 'intent'), self.padding(mention_vec, 'mention'), intent_len, mention_len
+
+    def padding(self, inputs, set_type):
+        if set_type == 'word':
+            return np.concatenate([inputs, np.zeros((self.max_word - len(inputs), self.n_word))], 0)
+        elif set_type == 'intent':
+            return np.concatenate([inputs, np.zeros((self.max_intent_len - len(inputs), self.n_intent))], 0)
+        elif set_type == 'mention':
+            return np.concatenate([inputs, np.zeros((self.max_word - len(inputs), self.n_mention))], 0)
+
+    def encoder(self, inputs, close_set, isword):
+        res = np.zeros(len(close_set))
+        if isword == True:
+            try:
+                res[close_set.index(inputs)] = 1.
+            except:
+                res[close_set.index('OOV')] = 1.
+        else:
+            res[close_set.index(inputs)] = 1.
+        return res
+
+    def decoder(self, inputs, close_set, isword = False):
+        pass
+
+
+
 # if __name__ == '__main__':
+#     provider = BMWSeqProvider('../data/BMW/TEST.txt')
+#     for batch in provider:
+#         for i in range(5):
+#             print(batch[i].shape)
+        # break
+
 #
 #     provider = PaddedSeqProvider('../data/anonymous_raw_poi_valid_trimmed.txt', '../data/raw_poiwords.dict', '../data/raw_poilabel_map.npz', 50, 35)
 #     i = 0
