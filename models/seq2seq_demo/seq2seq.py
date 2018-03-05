@@ -83,10 +83,10 @@ with graph.as_default():
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
-    for i in range(10):
+    for i in range(200):
         errs = []
         accs = []
-        for batch in valid_provider:
+        for batch in train_provider:
             feed_dict = {
                     sentence_placeholder:batch[0],
                     intent_placeholder:batch[1],
@@ -97,4 +97,19 @@ with graph.as_default():
             _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
             errs.append(err)
             accs.append(acc)
-        logging_io.RESULT_INFO('Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
+        logging_io.RESULT_INFO('TRAINING Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
+        if i % 5 == 0:
+            errs = []
+            accs = []
+            for batch in valid_provider:
+                feed_dict = {
+                        sentence_placeholder:batch[0],
+                        intent_placeholder:batch[1],
+                        mention_placeholder:batch[2],
+                        intent_len_placeholder:batch[3],
+                        mention_len_placeholder:batch[4]
+                }
+                _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
+                errs.append(err)
+                accs.append(acc)
+            logging_io.RESULT_INFO('____|VALIDATION Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
