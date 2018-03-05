@@ -506,16 +506,16 @@ class PaddedSeqProvider(object):
     def tagIndex2tag(self, index):
         return self.label_map[index]
 
-if __name__ == '__main__':
-
-    provider = PaddedSeqProvider('../data/anonymous_raw_poi_valid_trimmed.txt', '../data/raw_poiwords.dict', '../data/raw_poilabel_map.npz', 50, 35)
-    i = 0
-    for batch_input, batch_target in provider:
-        print(batch_input.shape, batch_target.shape)
-        i += 1
-        # break
-    print(i)
-    print(provider.n_samples / 50)
+# if __name__ == '__main__':
+#
+#     provider = PaddedSeqProvider('../data/anonymous_raw_poi_valid_trimmed.txt', '../data/raw_poiwords.dict', '../data/raw_poilabel_map.npz', 50, 35)
+#     i = 0
+#     for batch_input, batch_target in provider:
+#         print(batch_input.shape, batch_target.shape)
+#         i += 1
+#         # break
+#     print(i)
+#     print(provider.n_samples / 50)
 
 
 
