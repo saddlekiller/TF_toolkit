@@ -5,6 +5,8 @@ sys.path.append('../../utils')
 from data_provider import *
 from logging_io import *
 from tensorflow.contrib.layers import *
+from tensorflow.python.ops import rnn_cell_impl
+from tensorflow.python.platform import tf_logging as logging
 
 def embedding_layer(inputs, n_hidden, activation = tf.identity):
 
@@ -22,89 +24,66 @@ def embedding_layer(inputs, n_hidden, activation = tf.identity):
         return tf.reshape(outputs, [n_batch, n_step, n_hidden])
 
 
-class AttentionLSTMCell(tf.nn.rnn_cell.LSTMCell):
+class AttentionLSTMCell(rnn_cell_impl.RNNCell):
+
+    def __init__(self, num_units, reuse=None):
+
+        super(AttentionLSTMCell, self).__init__(_reuse=reuse)
+        self._num_units = num_units
+        self._state_is_tuple = True
+        self._reuse = reuse
 
 
-  def __init__(self, num_units, forget_bias=1.0,
-               state_is_tuple=True, activation=None, reuse=None, name=None):
-    super(AttentionLSTMCell, self).__init__(_reuse=reuse, name=name)
-    if not state_is_tuple:
-      logging.warn("%s: Using a concatenated state is slower and will soon be "
-                   "deprecated.  Use state_is_tuple=True.", self)
+    @property
+    def state_size(self):
+        return rnn_cell_impl.LSTMStateTuple(self._num_units, self._num_units)
 
-    # Inputs must be 2-dimensional.
-    self.input_spec = base_layer.InputSpec(ndim=2)
+    @property
+    def output_size(self):
+        return self._num_units
 
-    self._num_units = num_units
-    self._forget_bias = forget_bias
-    self._state_is_tuple = state_is_tuple
-    self._activation = activation or math_ops.tanh
+    def build(self, inputs_shape):
+        if inputs_shape[1].value is None:
+          raise ValueError("Expected inputs.shape[-1] to be known, saw shape: %s"
+                           % inputs_shape)
 
-  @property
-  def state_size(self):
-    return (LSTMStateTuple(self._num_units, self._num_units)
-            if self._state_is_tuple else 2 * self._num_units)
+        input_depth = inputs_shape[1].value
+        h_depth = self._num_units
+        self._kernel = self.add_variable(
+            'kernel',
+            shape=[input_depth + h_depth, 4 * self._num_units])
+        self._bias = self.add_variable(
+            'bias',
+            shape=[4 * self._num_units],
+            initializer=tf.zeros_initializer(dtype=self.dtype))
 
-  @property
-  def output_size(self):
-    return self._num_units
+        self.built = True
 
-  def build(self, inputs_shape):
-    if inputs_shape[1].value is None:
-      raise ValueError("Expected inputs.shape[-1] to be known, saw shape: %s"
-                       % inputs_shape)
+    def call(self, inputs, state):
+        # print(state)
+        # print('|'*50)
+        c, h = state
+        gate_inputs = tf.add(tf.matmul(tf.concat([inputs, h], 1), self._kernel), self._bias)
+        i, j, f, o = tf.split(value = gate_inputs, num_or_size_splits = 4, axis = 1)
+        new_c = tf.add(tf.multiply(c, tf.nn.sigmoid(f)), tf.multiply(i, tf.nn.tanh(j)))
+        new_h = tf.multiply(tf.nn.sigmoid(o), tf.nn.tanh(new_c))
+        new_state = rnn_cell_impl.LSTMStateTuple(new_c, new_h)
+        return new_h, new_state
 
-    input_depth = inputs_shape[1].value
-    h_depth = self._num_units
-    self._kernel = self.add_variable(
-        _WEIGHTS_VARIABLE_NAME,
-        shape=[input_depth + h_depth, 4 * self._num_units])
-    self._bias = self.add_variable(
-        _BIAS_VARIABLE_NAME,
-        shape=[4 * self._num_units],
-        initializer=init_ops.zeros_initializer(dtype=self.dtype))
-
-    self.built = True
-
-  def call(self, inputs, state):
-    sigmoid = math_ops.sigmoid
-    one = constant_op.constant(1, dtype=dtypes.int32)
-    # Parameters of gates are concatenated into one multiply for efficiency.
-    if self._state_is_tuple:
-      c, h = state
-    else:
-      c, h = array_ops.split(value=state, num_or_size_splits=2, axis=one)
-
-    gate_inputs = math_ops.matmul(
-        array_ops.concat([inputs, h], 1), self._kernel)
-    gate_inputs = nn_ops.bias_add(gate_inputs, self._bias)
-
-    # i = input_gate, j = new_input, f = forget_gate, o = output_gate
-    i, j, f, o = array_ops.split(
-        value=gate_inputs, num_or_size_splits=4, axis=one)
-
-    forget_bias_tensor = constant_op.constant(self._forget_bias, dtype=f.dtype)
-    # Note that using `add` and `multiply` instead of `+` and `*` gives a
-    # performance improvement. So using those at the cost of readability.
-    add = math_ops.add
-    multiply = math_ops.multiply
-    new_c = add(multiply(c, sigmoid(add(f, forget_bias_tensor))),
-                multiply(sigmoid(i), self._activation(j)))
-    new_h = multiply(self._activation(new_c), sigmoid(o))
-
-    if self._state_is_tuple:
-      new_state = LSTMStateTuple(new_c, new_h)
-    else:
-      new_state = array_ops.concat([new_c, new_h], 1)
-    return new_h, new_state
+# inputs = tf.placeholder(tf.float32, [10, 5, 10])
+# cell = AttentionLSTMCell(10)
+# outputs, states = tf.nn.dynamic_rnn(
+#                 cell=cell,
+#                 dtype=tf.float32,
+#                 inputs=inputs)
 
 batch_size = 100
 max_word = 35
 
-logging_io.DEBUG_INFO('Generating and saving TRAINING corpus')
-train_provider = BMWSeqProvider(corpus_dir = '../../data/BMW/TRAIN.txt', batch_size = 50, max_word = 35, isGenerate = True, isTrain = True)
-logging_io.DEBUG_INFO('Generating and saving VALIDATION corpus')
-valid_provider = BMWSeqProvider(corpus_dir = '../../data/BMW/TEST.txt', batch_size = 50, max_word = 35, isGenerate = True, isTrain = False)
+# logging_io.DEBUG_INFO('Generating and saving TRAINING corpus')
+# train_provider = BMWSeqProvider(corpus_dir = '../../data/BMW/TRAIN.txt', batch_size = 50, max_word = 35, isGenerate = True, isTrain = True)
+# logging_io.DEBUG_INFO('Generating and saving VALIDATION corpus')
+# valid_provider = BMWSeqProvider(corpus_dir = '../../data/BMW/TEST.txt', batch_size = 50, max_word = 35, isGenerate = True, isTrain = False)
 
 logging_io.DEBUG_INFO('Loading TRAINING corpus')
 train_provider = BMWSeqProvider(corpus_dir = '../../data/BMW/TRAIN.txt', batch_size = batch_size, max_word = max_word, isGenerate = False, isTrain = True)
@@ -146,10 +125,13 @@ with graph.as_default():
                 dtype=tf.float32,
                 sequence_length=mention_len_placeholder,
                 inputs=encoder_reshape)
+        print(encoder_states)
+        print('#'*50)
 
-    with tf.variable_scope('encoder_decoder', reuse = True):
-        decoder_cell = AttentionLSTMCell(num_units=n_lstm_hidden, state_is_tuple=True)
+    with tf.variable_scope('encoder_decoder', reuse = False):
+        decoder_cell = AttentionLSTMCell(num_units=n_lstm_hidden)
         decoder_outputs, decoder_states = tf.nn.dynamic_rnn(
+                initial_state = encoder_states,
                 cell=decoder_cell,
                 dtype=tf.float32,
                 sequence_length=mention_len_placeholder,
@@ -171,37 +153,37 @@ with graph.as_default():
     # # 3500*60
     loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = decoder_mention_affine, labels = mention_placeholder_reshape))
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(decoder_mention_affine, 1), tf.argmax(mention_placeholder_reshape, 1)), tf.float32))
-    optimizer = tf.train.AdamOptimizer(0.001).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
-    # for i in range(200):
-    #     errs = []
-    #     accs = []
-    #     for batch in train_provider:
-    #         feed_dict = {
-    #                 sentence_placeholder:batch[0],
-    #                 intent_placeholder:batch[1],
-    #                 mention_placeholder:batch[2],
-    #                 intent_len_placeholder:batch[3],
-    #                 mention_len_placeholder:batch[4]
-    #         }
-    #         _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
-    #         errs.append(err)
-    #         accs.append(acc)
-    #     logging_io.RESULT_INFO('TRAINING Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
-    #     if i % 5 == 0:
-    #         errs = []
-    #         accs = []
-    #         for batch in valid_provider:
-    #             feed_dict = {
-    #                     sentence_placeholder:batch[0],
-    #                     intent_placeholder:batch[1],
-    #                     mention_placeholder:batch[2],
-    #                     intent_len_placeholder:batch[3],
-    #                     mention_len_placeholder:batch[4]
-    #             }
-    #             _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
-    #             errs.append(err)
-    #             accs.append(acc)
-    #         logging_io.RESULT_INFO('____|VALIDATION Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
+    for i in range(200):
+        errs = []
+        accs = []
+        for batch in train_provider:
+            feed_dict = {
+                    sentence_placeholder:batch[0],
+                    intent_placeholder:batch[1],
+                    mention_placeholder:batch[2],
+                    intent_len_placeholder:batch[3],
+                    mention_len_placeholder:batch[4]
+            }
+            _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
+            errs.append(err)
+            accs.append(acc)
+            logging_io.RESULT_INFO('TRAINING Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
+        # if i % 5 == 0:
+        #     errs = []
+        #     accs = []
+        #     for batch in valid_provider:
+        #         feed_dict = {
+        #                 sentence_placeholder:batch[0],
+        #                 intent_placeholder:batch[1],
+        #                 mention_placeholder:batch[2],
+        #                 intent_len_placeholder:batch[3],
+        #                 mention_len_placeholder:batch[4]
+        #         }
+        #         _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
+        #         errs.append(err)
+        #         accs.append(acc)
+        #     logging_io.RESULT_INFO('____|VALIDATION Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
