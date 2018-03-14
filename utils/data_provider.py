@@ -516,6 +516,8 @@ class BMWSeqProvider(object):
         self.max_word = max_word
         self.isGenerate = isGenerate
         self.isTrain = isTrain
+        self._root_dir = '../../data/BMW/'
+        self._prefix = 'seq_corpus_'
         # if self.Padding == False:
         #     raise NotImplementedError
         if self.isGenerate == True:
@@ -581,9 +583,9 @@ class BMWSeqProvider(object):
             self.mention_set = set()
             self.word_set = set()
         else:
-            self.word_set = pickle.load(open('../../data/BMW/seq_corpus_vocabulary.npz', 'rb'))
-            self.intent_set = pickle.load(open('../../data/BMW/seq_corpus_intent.npz', 'rb'))
-            self.mention_set = pickle.load(open('../../data/BMW/seq_corpus_mention.npz', 'rb'))
+            self.word_set = pickle.load(open(self._root_dir + self._prefix + 'vocabulary.npz', 'rb'))
+            self.intent_set = pickle.load(open(self._root_dir + self._prefix + 'intent.npz', 'rb'))
+            self.mention_set = pickle.load(open(self._root_dir + self._prefix + 'mention.npz', 'rb'))
 
 
         for line in self.corpus:
@@ -617,18 +619,18 @@ class BMWSeqProvider(object):
         self.corpus_['n_mention'] = len(self.mention_set)
         self.loadParameters()
         if self.isTrain == True:
-            pickle.dump(self.corpus_, open('../../data/BMW/seq_corpus_train.npz', 'wb'))
-            pickle.dump(self.word_set, open('../../data/BMW/seq_corpus_vocabulary.npz', 'wb'))
-            pickle.dump(self.intent_set, open('../../data/BMW/seq_corpus_intent.npz', 'wb'))
-            pickle.dump(self.mention_set, open('../../data/BMW/seq_corpus_mention.npz', 'wb'))
+            pickle.dump(self.corpus_, open(self._root_dir + self._prefix + 'train.npz', 'wb'))
+            pickle.dump(self.word_set, open(self._root_dir + self._prefix + 'vocabulary.npz', 'wb'))
+            pickle.dump(self.intent_set, open(self._root_dir + self._prefix + 'intent.npz', 'wb'))
+            pickle.dump(self.mention_set, open(self._root_dir + self._prefix + 'mention.npz', 'wb'))
         else:
-            pickle.dump(self.corpus_, open('../../data/BMW/seq_corpus_valid.npz', 'wb'))
+            pickle.dump(self.corpus_, open(self._root_dir + self._prefix + 'valid.npz', 'wb'))
 
     def readCorpus(self):
         if self.isTrain == True:
-            self.corpus_ = pickle.load(open('../../data/BMW/seq_corpus_train.npz', 'rb'))
+            self.corpus_ = pickle.load(open(self._root_dir + self._prefix + 'train.npz', 'rb'))
         else:
-            self.corpus_ = pickle.load(open('../../data/BMW/seq_corpus_valid.npz', 'rb'))
+            self.corpus_ = pickle.load(open(self._root_dir + self._prefix + 'valid.npz', 'rb'))
         self.loadParameters()
 
     def loadParameters(self):
@@ -639,9 +641,9 @@ class BMWSeqProvider(object):
             self.intent_set = self.corpus_['intent_set']
             self.mention_set = self.corpus_['mention_set']
         else:
-            self.word_set = pickle.load(open('../../data/BMW/seq_corpus_vocabulary.npz', 'rb'))
-            self.intent_set = pickle.load(open('../../data/BMW/seq_corpus_intent.npz', 'rb'))
-            self.mention_set = pickle.load(open('../../data/BMW/seq_corpus_mention.npz', 'rb'))
+            self.word_set = pickle.load(open(self._root_dir + self._prefix + 'vocabulary.npz', 'rb'))
+            self.intent_set = pickle.load(open(self._root_dir + self._prefix + 'intent.npz', 'rb'))
+            self.mention_set = pickle.load(open(self._root_dir + self._prefix + 'mention.npz', 'rb'))
 
         self.n_word = self.corpus_['n_word']
         self.max_intent_len = self.corpus_['max_intent_len']
