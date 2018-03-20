@@ -3,6 +3,9 @@ import tensorflow as tf
 from config_mapping import *
 import pickle
 import matplotlib.pyplot as plt
+import urllib.request
+import os
+import socket
 
 
 def acc_sum(results, targets):
@@ -92,9 +95,102 @@ def build_image_(inputs, n_rows, bounder_size = 4):
     return image
 
 
+def retrieveURLDirs(direction):
+    socket.setdefaulttimeout(5)
+    if direction[-1] != '/':
+        direction += '/'
+    upper_dir = '/'.join(direction.split('/')[:-2]) + '/'
+    # print(upper_dir)
+    filenames = [i for i in os.listdir(direction) if i.find('.txt') != -1]
+    writer = open(upper_dir + 'labels.txt', 'w')
+    for filename in filenames:
+        name = filename[:-4]
+        basepath = direction
+        # print(basepath, name)
+        ids, urls, locs, name = retrieveURLFile(basepath, name)
+        # print(ids, urls, locs, names)
+
+        for id_, loc_ in zip(ids, locs):
+            writer.write('#'.join([name, id_, loc_]) + '\n')
+        writer.close()
+        # break
+
+
+def retrieveURLFile(basepath, name):
+    if basepath[-1] != '/':
+        basepath += '/'
+    filename = basepath + name + '.txt'
+    lines = open(filename).readlines()
+    ids = []
+    urls = []
+    locs = []
+    savepath = '/'.join(basepath.split('/')[:-2]) + '/images'
+    # print(basepath, savepath)
+    try:
+        os.mkdir(savepath)
+    except:
+        pass
+    for line in lines:
+        splited = line.split()
+        id_ = splited[0]
+        url_ = splited[1]
+        loc_ = ' '.join(splited[2:])
+        retrieveURL(url_, name + '+' + id_ + '.jpg', savepath)
+        ids.append(id_)
+        urls.append(url_)
+        locs.append(loc_)
+
+    return ids, urls, locs, name
+
+def retrieveURL(url, name, savepath):
+    try:
+        urllib.request.urlretrieve(url, savepath + '/' + name)
+    except:
+        count = 1
+        while count <= 5:
+            try:
+                urllib.request.urlretrieve(url, savepath + '/' + name)
+                break
+            except:
+                count += 1
+                pass
+        if count > 5:
+            temp = name[:-4].split('+')
+            # print(temp)
+            person = temp[0]
+            index = temp[1]
+            print('[FAILURE] name: %s, id: %s'%(person, index))
+        pass
+        # pass
+
+def retrieveCheck(images_dir, labels_dir):
+
+    images = [i for i in os.listdir(images_dir) if i.find('.jpg') != -1]
+    images_pairs = []
+    for image in images:
+        temp = image[:-4].split('+')
+        images_pairs.append(temp)
+
+    new_labels = []
+    labels = open(labels_dir).readlines()
+    for label in labels:
+        pairs = label.split('#')
+        if pairs in images_pairs:
+            new_labels.append(label)
+        else:
+            print(pairs)
+
+
+
+
+
 
 #
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    retrieveURLDirs('F:/github/TF_toolkit/data/FACE/files')
+    # retrieveURLFile('F:/github/TF_toolkit/data/FACE/files', 'A.J._Buckley')
+    # retrieveURL('http://www.contactmusic.com/pics/ld/active_for_life_arrivals_090110/a.j_buckley_2706152.jpg')
+
     # data = []
     # for i in range(16):
     #     temp = np.random.random((28, 28, 3))
