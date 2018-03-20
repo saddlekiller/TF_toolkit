@@ -32,6 +32,8 @@ class AttentionLSTMCell(rnn_cell_impl.RNNCell):
         self._num_units = num_units
         self._state_is_tuple = True
         self._reuse = reuse
+        # self._first = False
+        # self._encoder_inputs = encoder_inputs
 
 
     @property
@@ -62,11 +64,21 @@ class AttentionLSTMCell(rnn_cell_impl.RNNCell):
     def call(self, inputs, state):
         # print(state)
         # print('|'*50)
+
+        # self.inputs = inputs
+
+        shapes = inputs.get_shape()
+        step_size = shapes[1].value
         c, h = state
         gate_inputs = tf.add(tf.matmul(tf.concat([inputs, h], 1), self._kernel), self._bias)
         i, j, f, o = tf.split(value = gate_inputs, num_or_size_splits = 4, axis = 1)
         new_c = tf.add(tf.multiply(c, tf.nn.sigmoid(f)), tf.multiply(i, tf.nn.tanh(j)))
         new_h = tf.multiply(tf.nn.sigmoid(o), tf.nn.tanh(new_c))
+        print(new_h)
+        cross_dot = tf.multiply(inputs, tf.tile(new_h.expand_dim(1), [1, step_size, 1]))
+        alpha = tf.transpose(tf.nn.softmax(tf.transpose(cross_dot, [0, 2, 1])), [0, 2, 1])
+        # tf.multiply(alpha, inputs)
+
         new_state = rnn_cell_impl.LSTMStateTuple(new_c, new_h)
         return new_h, new_state
 
@@ -145,33 +157,28 @@ with graph.as_default():
 
     mention_placeholder_reshape = tf.reshape(mention_placeholder, [-1, n_mention])
 
-    # logging_io.DEBUG_INFO(decoder_mention_affine)
-    # # 3500*60
-    # logging_io.DEBUG_INFO(mention_placeholder)
-    # # 100*35*60
-    # logging_io.DEBUG_INFO(mention_placeholder_reshape)
-    # # 3500*60
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = decoder_mention_affine, labels = mention_placeholder_reshape))
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(decoder_mention_affine, 1), tf.argmax(mention_placeholder_reshape, 1)), tf.float32))
-    optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
 
-    for i in range(200):
-        errs = []
-        accs = []
-        for batch in train_provider:
-            feed_dict = {
-                    sentence_placeholder:batch[0],
-                    intent_placeholder:batch[1],
-                    mention_placeholder:batch[2],
-                    intent_len_placeholder:batch[3],
-                    mention_len_placeholder:batch[4]
-            }
-            _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
-            errs.append(err)
-            accs.append(acc)
-            logging_io.RESULT_INFO('TRAINING Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
+    # loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = decoder_mention_affine, labels = mention_placeholder_reshape))
+    # accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(decoder_mention_affine, 1), tf.argmax(mention_placeholder_reshape, 1)), tf.float32))
+    # optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
+    # sess = tf.Session()
+    # sess.run(tf.global_variables_initializer())
+
+    # for i in range(200):
+    #     errs = []
+    #     accs = []
+    #     for batch in train_provider:
+    #         feed_dict = {
+    #                 sentence_placeholder:batch[0],
+    #                 intent_placeholder:batch[1],
+    #                 mention_placeholder:batch[2],
+    #                 intent_len_placeholder:batch[3],
+    #                 mention_len_placeholder:batch[4]
+    #         }
+    #         _, err, acc = sess.run([optimizer, loss, accuracy], feed_dict = feed_dict)
+    #         errs.append(err)
+    #         accs.append(acc)
+    #         logging_io.RESULT_INFO('TRAINING Epoch %5d => LOSS: %8f, ACC:%8f'%(i, np.mean(errs), np.mean(accs)))
         # if i % 5 == 0:
         #     errs = []
         #     accs = []
