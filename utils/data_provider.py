@@ -697,19 +697,21 @@ class VGGFaceProvider():
     # image_dir: directory of images
     # label_dir: directory of label
     #         sample: Name ID left upper right down pose DPM
-    def __init__(self, image_dir, label_dir, batch_size):
+    def __init__(self, image_dir, label_dir, batch_size, typename = 'jpg'):
         self.image_dir = image_dir
         self.label_dir = label_dir
         self.batch_size = batch_size
+        self.typename = typename
         # self.name_id_dict = {}
         # print(self.image_dir)
         self.load()
 
     def load(self):
         print('[INFO] Starting to load dataset ...')
-        self.image_filenames = [i for i in os.listdir(self.image_dir) if i.find('.jpg') != -1]
+        self.image_filenames = [i for i in os.listdir(self.image_dir) if i.find(self.typename) != -1]
         if self.image_dir[-1] != '/':
             self.image_dir += '/'
+        # print(self.image_dir)
         if len(self.image_filenames) == 0:
             print('[ERROR] BAD DIRECTORY')
             raise IOError
@@ -754,6 +756,8 @@ class VGGFaceProvider():
         self._currentPosition = 0
 
     def readImg(self, url):
+        # print(url)
+        # print('*'*50)
         return cv2.imread(url).astype(np.float32) / 255
 
     def checkImg(self):
@@ -771,7 +775,10 @@ class VGGFaceProvider():
         print('[INFO] Images and labels checking has been finished .')
 
     def getImgURL(self, line):
-        return self.image_dir + '+'.join(line.split()[:1]) + '.jpg'
+        if self.typename[0] == '.':
+            return self.image_dir + '+'.join(line.split()[:1]) + self.typename
+        else:
+            return self.image_dir + '+'.join(line.split()[:1]) + '.' + self.typename
 
 
     def shuffle(self):
@@ -788,12 +795,12 @@ class VGGFaceProvider():
 
 # if __name__ == '__main__':
 #
-#     provider = VGGFaceProvider('../data/FACE/reshape_images', '../data/FACE/reshape_labels.txt', 50)
+#     provider = VGGFaceProvider('/home/cheng/github/TF_toolkit/data/FACE/reshape_images', '/home/cheng/github/TF_toolkit/data/FACE/reshape_labels.txt', 50, 'png')
 #     for batch_inputs, batch_labels in provider:
 #         print(batch_inputs.shape)
 #         print(batch_labels.shape)
-
-        # break
+#
+#         break
 
 #     provider = BMWSeqProvider('../data/BMW/TEST.txt')
 #     for batch in provider:
