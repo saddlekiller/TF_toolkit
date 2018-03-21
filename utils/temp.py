@@ -96,7 +96,7 @@ def checkImages(images_dir, labels_dir):
     writer.close()
     print('Labels have been generated.')
 
-def reshapeImageAll(images_dir, label_dir, shape):
+def reshapeImageAll(images_dir, label_dir, shape, isLinux = False):
     if images_dir[-1] != '/':
         images_dir += '/'
     lines = open(label_dir).readlines()
@@ -120,13 +120,22 @@ def reshapeImageAll(images_dir, label_dir, shape):
             # reshape_image = transform.rescale(image, 0.5)
             reshape_image, new_loc = reshapeImage(image, shape, label_dict[key])
             reshape_image = reshape_image[:, :, ::-1]
+            plt.show()
             s1 = image.shape
             s2 = reshape_image.shape
             # print('Shape transormation: (%d, %d, %d) => (%d, %d, %d)'%(s1[0], s1[1], s1[2], s2[0], s2[1], s2[2]))
+            if isLinux == True:
+                filename = filename[:-4] + '.png'
+            # print(filename)
             plt.imsave(savepath + filename, reshape_image)
+            # image_writer = open(savepath + filename, 'wb')
+            # image_writer.write(reshape_image)
+            # image_writer.close()
             writer.write(key + ' ' + ' '.join([str(round(i, 2)) for i in new_loc]) + '\n')
         except:
+            # print(filename)
             print('[ERROR_INFO]: ' + filename)
+        # break
     writer.close()
 
 
@@ -143,4 +152,4 @@ def reshapeImageAll(images_dir, label_dir, shape):
 # print(new_loc)
 
 # checkImages('../data/FACE/images_v1', '../data/FACE/files_v1')
-reshapeImageAll('../data/FACE/images_v1', '../data/FACE/labels.txt', [200, 130, 3])
+reshapeImageAll('../data/FACE/images_v1', '../data/FACE/labels.txt', [256, 128, 3], True)
