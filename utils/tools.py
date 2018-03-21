@@ -179,24 +179,61 @@ def retrieveURL(url, name, savepath):
         print('[FAILURE] name: %s, id: %s'%(person, index))
         pass
 
+def annotateImageDir(image_dir, loc):
+    width = loc[2] - loc[0]
+    height = loc[3] - loc[1]
+    img=cv2.imread(image_dir)
+    plt.figure(12)
+    plt.imshow(img)
+    currentAxis=plt.gca()
+    rect=patches.Rectangle((loc[0], loc[1]),width,height,linewidth=1,edgecolor='r',facecolor='none')
+    currentAxis.add_patch(rect)
+    plt.show()
 
+def annotateImage(image, loc):
+    width = loc[2] - loc[0]
+    height = loc[3] - loc[1]
+    plt.figure(12)
+    plt.imshow(image)
+    currentAxis=plt.gca()
+    rect=patches.Rectangle((loc[0], loc[1]),width,height,linewidth=1,edgecolor='r',facecolor='none')
+    currentAxis.add_patch(rect)
+    plt.show()
 
-def retrieveCheck(images_dir, labels_dir):
+def reshapeImage(image, resize, loc):
+    raw_shape = image.shape
+    if len(resize) == 2:
+        resize = (resize[0], resize[1], 3)
+    else:
+        resize = (resize[0], resize[1], resize[2])
+    image_reshape = transform.resize(image, resize)
+    x_ratio = resize[0] / raw_shape[0]
+    y_ratio = resize[1] / raw_shape[1]
+    new_loc1 = loc[0] * x_ratio
+    new_loc2 = loc[1] * y_ratio
+    new_loc3 = loc[2] * x_ratio
+    new_loc4 = loc[3] * y_ratio
 
-    images = [i for i in os.listdir(images_dir) if i.find('.jpg') != -1]
-    images_pairs = []
-    for image in images:
-        temp = image[:-4].split('+')
-        images_pairs.append(temp)
+    new_loc = [new_loc1, new_loc2, new_loc3, new_loc4] + loc[4:]
+    return image_reshape, new_loc
 
-    new_labels = []
-    labels = open(labels_dir).readlines()
-    for label in labels:
-        pairs = label.split('#')
-        if pairs in images_pairs:
-            new_labels.append(label)
-        else:
-            print(pairs)
+def reshapeImageDir(image_dir, resize, loc):
+    image=cv2.imread(image_dir)
+    raw_shape = image.shape
+    if len(resize) == 2:
+        resize = (resize[0], resize[1], 3)
+    else:
+        resize = (resize[0], resize[1], resize[2])
+    image_reshape = transform.resize(image, resize)
+    x_ratio = resize[0] / raw_shape[0]
+    y_ratio = resize[1] / raw_shape[1]
+    new_loc1 = loc[0] * x_ratio
+    new_loc2 = loc[1] * y_ratio
+    new_loc3 = loc[2] * x_ratio
+    new_loc4 = loc[3] * y_ratio
+
+    new_loc = [new_loc1, new_loc2, new_loc3, new_loc4] + loc[4:]
+    return image_reshape, new_loc
 
 
 
@@ -205,9 +242,9 @@ def retrieveCheck(images_dir, labels_dir):
 #
 if __name__ == '__main__':
     # retrieveURLDirs('/home/cheng/github/TF_toolkit/data/FACE/files')
-    # args = sys.argv
-    # retrieveURLFile(args[1], args[2])
-    retrieveURLFile('/home/cheng/github/TF_toolkit/data/FACE/files', 'A.J._Buckley.txt')
+    args = sys.argv
+    retrieveURLFile(args[1], args[2])
+    # retrieveURLFile('/home/cheng/github/TF_toolkit/data/FACE/files', 'A.J._Buckley.txt')
 
     # retrieveURL('http://www.contactmusic.com/pics/ld/active_for_life_arrivals_090110/a.j_buckley_2706152.jpg')
 
