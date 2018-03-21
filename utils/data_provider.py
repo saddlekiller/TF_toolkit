@@ -2,6 +2,8 @@ import numpy as np
 import pickle
 # from cmd_io import *
 from logging_io import *
+import cv2
+import os
 
 class dataProvider(object):
 
@@ -691,7 +693,108 @@ class BMWSeqProvider(object):
 
 
 
+class VGGFaceProvider():
+    # image_dir: directory of images
+    # label_dir: directory of label
+    #         sample: Name ID left upper right down pose DPM
+    def __init__(self, image_dir, label_dir, batch_size):
+        self.image_dir = image_dir
+        self.label_dir = label_dir
+        self.batch_size = batch_size
+        # self.name_id_dict = {}
+        # print(self.image_dir)
+        self.load()
+
+    def load(self):
+        print('[INFO] Starting to load dataset ...')
+        self.image_filenames = [i for i in os.listdir(self.image_dir) if i.find('.jpg') != -1]
+        if self.image_dir[-1] != '/':
+            self.image_dir += '/'
+        if len(self.image_filenames) == 0:
+            print('[ERROR] BAD DIRECTORY')
+            raise IOError
+        shape = cv2.imread(self.image_dir + self.image_filenames[0]).shape
+        self.lines = open(self.label_dir).readlines()
+        # self.checkImg()
+        self._n_samples = len(self.lines)
+        self._n_batches = int(self._n_samples / self.batch_size)
+        if self._n_samples % self.batch_size != 0:
+            self._n_batches += 1
+        self._currentPosition = 0
+        self._currentOrder = np.arange(self._n_samples)
+        # print(shape)
+        print('[INFO] Dataset is ready .')
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        self.__next__()
+
+    def __next__(self):
+        if self._currentPosition >= self._n_batches:
+            self.new_epoch()
+            raise StopIteration
+        indexes = self._currentOrder[self._currentPosition*self.batch_size:(self._currentPosition + 1)*self.batch_size]
+        currentLines = [self.lines[i] for i in indexes]
+        # print(indexes)
+        batch_images = np.array([self.readImg(self.getImgURL(i)) for i in currentLines])
+        # for img in batch_images:
+        #     print(img.shape)
+        batch_labels = np.array([[float(j) for j in i.split()[2:]] for i in currentLines])
+        self._currentPosition += 1
+        return batch_images, batch_labels
+
+    def reset(self):
+        self._currentOrder = np.arange(self._n_samples)
+        self.new_epoch()
+
+    def new_epoch(self):
+        self.shuffle()
+        self._currentPosition = 0
+
+    def readImg(self, url):
+        return cv2.imread(url).astype(np.float32) / 255
+
+    def checkImg(self):
+        print('[INFO] Starting to check images and labels ...')
+        for line in self.lines:
+            filename = self.getImgURL(line)
+            try:
+                image = cv2.imread(filename)
+                if len(image.shape) != 3 or len(image) == 0:
+                    print('[ERROR] Broken Image Files: %s' % (filename))
+                    raise IOError
+            except:
+                print('[ERROR] Broken Image Files: %s' % (filename))
+                raise IOError
+        print('[INFO] Images and labels checking has been finished .')
+
+    def getImgURL(self, line):
+        return self.image_dir + '+'.join(line.split()[:1]) + '.jpg'
+
+
+    def shuffle(self):
+        np.random.shuffle(self._currentOrder)
+
+
+
+
+
+
+
+
+
+
 # if __name__ == '__main__':
+#
+#     provider = VGGFaceProvider('../data/FACE/reshape_images', '../data/FACE/reshape_labels.txt', 50)
+#     for batch_inputs, batch_labels in provider:
+#         print(batch_inputs.shape)
+#         print(batch_labels.shape)
+
+        # break
+
 #     provider = BMWSeqProvider('../data/BMW/TEST.txt')
 #     for batch in provider:
 #         for i in range(5):
