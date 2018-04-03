@@ -96,6 +96,7 @@ class TransferModel(object):
                     self.layers.append(tf.nn.conv2d_transpose(self.layers[-1], kernel, output_shape=value['output_shape'], strides=[1, value['strides'], value['strides'], 1], padding="SAME"))
             self.sess = tf.Session()
             self.sess.run(tf.global_variables_initializer())
+            self.loss = tf.reduce_mean(())
 
     def run(self, run_mode):
         image = np.random.random((1, 350, 309, 3))
