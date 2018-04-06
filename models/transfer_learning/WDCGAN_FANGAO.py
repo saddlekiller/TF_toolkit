@@ -27,12 +27,12 @@ with graph.as_default():
 	#
 		with tf.variable_scope('Generator'):
 
-			Generator_affine_1  = fully_connected(inputs, 256,
+			Generator_affine_1  = fully_connected(inputs, 512,
 								weights_initializer=tf.random_normal_initializer(stddev=0.02),
 								# weights_regularizer=tc.layers.l2_regularizer(2.5e-5),
 								activation_fn=tf.nn.relu)
-			Generator_reshape_1 = tf.reshape(Generator_affine_1, [1, 1, 1, 256])
-			Generator_deconv_1  = convolution2d_transpose(Generator_reshape_1, 128, [2, 2], [2, 2],
+			Generator_reshape_1 = tf.reshape(Generator_affine_1, [1, 1, 1, 512])
+			Generator_deconv_1  = convolution2d_transpose(Generator_reshape_1, 128, [4, 4], [4, 4],
 								weights_initializer=tf.random_normal_initializer(stddev=0.02),
 								# weights_regularizer=tc.layers.l2_regularizer(2.5e-5),
 								activation_fn=tf.nn.relu)
@@ -83,7 +83,7 @@ with graph.as_default():
 			Discriminator_b3 = tf.get_variable('Discriminator_b3', initializer = tf.truncated_normal([64]))
 			Discriminator_k4 = tf.get_variable('Discriminator_k4', initializer = tf.truncated_normal([4, 4, 64, 128]))
 			Discriminator_b4 = tf.get_variable('Discriminator_b4', initializer = tf.truncated_normal([128]))
-			Discriminator_k5 = tf.get_variable('Discriminator_k5', initializer = tf.truncated_normal([2, 2, 128, 256]))
+			Discriminator_k5 = tf.get_variable('Discriminator_k5', initializer = tf.truncated_normal([4, 4, 128, 256]))
 			Discriminator_b5 = tf.get_variable('Discriminator_b5', initializer = tf.truncated_normal([256]))
 			# Discriminator_k6 = tf.get_variable('Discriminator_k6', initializer = tf.truncated_normal([4, 4, 256, 512]))
 			# Discriminator_b6 = tf.get_variable('Discriminator_b6', initializer = tf.truncated_normal([512]))
@@ -99,7 +99,7 @@ with graph.as_default():
 			Discriminator_conv_2	= leaky_relu(tf.add(tf.nn.conv2d(input = Discriminator_conv_1, filter = Discriminator_k2, padding = 'VALID', strides = [1, 4, 4, 1]), Discriminator_b2))
 			Discriminator_conv_3	= leaky_relu(tf.add(tf.nn.conv2d(input = Discriminator_conv_2, filter = Discriminator_k3, padding = 'VALID', strides = [1, 4, 4, 1]), Discriminator_b3))
 			Discriminator_conv_4	= leaky_relu(tf.add(tf.nn.conv2d(input = Discriminator_conv_3, filter = Discriminator_k4, padding = 'VALID', strides = [1, 4, 4, 1]), Discriminator_b4))
-			Discriminator_conv_5	= leaky_relu(tf.add(tf.nn.conv2d(input = Discriminator_conv_4, filter = Discriminator_k5, padding = 'VALID', strides = [1, 2, 2, 1]), Discriminator_b5))
+			Discriminator_conv_5	= leaky_relu(tf.add(tf.nn.conv2d(input = Discriminator_conv_4, filter = Discriminator_k5, padding = 'VALID', strides = [1, 4, 4, 1]), Discriminator_b5))
 			# Discriminator_conv_6	= leaky_relu(tf.add(tf.nn.conv2d(input = Discriminator_conv_5, filter = Discriminator_k6, padding = 'VALID', strides = [1, 4, 4, 1]), Discriminator_b6))
 			Discriminator_reshape_1 = tf.reshape(Discriminator_conv_5, [-1, 256])
 			Discriminator_affine_1  = leaky_relu(tf.add(tf.matmul(Discriminator_reshape_1, Discriminator_w6), Discriminator_b6))
@@ -128,8 +128,8 @@ with graph.as_default():
 		return Discriminator_affine_3
 
 
-	data_placeholder  = tf.placeholder(tf.float32, [1, 512, 512, 3])
-	prior_placeholder = tf.placeholder(tf.float32, [1, 256])
+	data_placeholder  = tf.placeholder(tf.float32, [1, 1024, 1024, 3])
+	prior_placeholder = tf.placeholder(tf.float32, [1, 512])
 	#
 	Generator_out		  = Generator(prior_placeholder)
 	Discriminator_fake_out = Discriminator(Generator_out, False)
@@ -143,8 +143,8 @@ with graph.as_default():
 	# print(Generator_variables)
 
 	with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-		Generator_optimizer	 = tf.train.RMSPropOptimizer(0.01).minimize(Generator_loss,	 var_list = Generator_variables)
-		Discriminator_optimizer = tf.train.RMSPropOptimizer(0.01).minimize(Discriminator_loss, var_list = Discriminator_variables)
+		Generator_optimizer	 = tf.train.RMSPropOptimizer(0.005).minimize(Generator_loss,	 var_list = Generator_variables)
+		Discriminator_optimizer = tf.train.RMSPropOptimizer(0.005).minimize(Discriminator_loss, var_list = Discriminator_variables)
 
 
 	Clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in Discriminator_variables]
@@ -167,30 +167,30 @@ with graph.as_default():
 	image = plt.imread('../../data/fangao/xingkong.jpg')
 	image = np.array(image.astype(np.float32) / 255)
 	def preprocessing(image):
-		res = transform.resize(image, [512,512,3])
-		res = np.array(res).reshape([1, 512, 512, 3])
+		res = transform.resize(image, [1024, 1024,3])
+		res = np.array(res).reshape([1, 1024, 1024, 3])
 		return res
 	image = preprocessing(image)
 
-	for i in range(1500):
+	for i in range(10000):
 		d_losses = []
 		g_losses = []
 		for j in range(5):
-			noise = np.random.uniform(-1, 1, [1, 256]).astype(np.float32)
+			noise = np.random.uniform(-1, 1, [1, 512]).astype(np.float32)
 			feed_dict = {data_placeholder: image, prior_placeholder: noise}
 			_, d_loss		  = sess.run([Discriminator_optimizer, Discriminator_loss]	   , feed_dict = feed_dict)
 			sess.run(Clip)
-		noise = np.random.uniform(-1, 1, [1, 256]).astype(np.float32)
+		noise = np.random.uniform(-1, 1, [1, 512]).astype(np.float32)
 		feed_dict = {data_placeholder: image, prior_placeholder: noise}
 		_, g_loss, g_image = sess.run([Generator_optimizer, Generator_loss, Generator_out], feed_dict = feed_dict)
 
 		d_losses.append(d_loss)
 		g_losses.append(g_loss)
 		print('EPOCH %d, D_LOSS: %f, G_LOSS: %f '%(i, np.mean(d_losses), np.mean(g_losses)))
-		g_image = g_image.reshape([512, 512, 3])
+		g_image = g_image.reshape([1024, 1024, 3])
 		# merge_image = build_image_(g_image, 10)
 		# print(np.array(g_image).shape)
-		if i%5 == 0:
+		if i%25 == 0:
 			for ii in range(3):
 				g_image[:, :, ii] = (g_image[:, :, ii] - np.min(g_image[:, :, ii])) / (np.max(g_image[:, :, ii]) - np.min(g_image[:, :, ii]))
-			plt.imsave('images/' + 'image.png', g_image)
+			plt.imsave('images/' + 'image_'+str(i+1)+'.png', g_image)
