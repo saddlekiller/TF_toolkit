@@ -1,0 +1,92 @@
+import tensorflow as tf
+import numpy as np
+
+tf.logging.set_verbosity(tf.logging.INFO)
+
+def basic_lstm(features, labels, mode):
+	n_lstm_hidden = 25
+	n_affine_hidden = 200
+	n_classes = 10
+	rnn_cell = tf.nn.rnn_cell.LSTMCell(n_lstm_hidden)
+	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
+	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
+	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.relu)
+	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.relu)
+	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
+
+	predictions = {
+		'classes': tf.argmax(input = logits, axis = 1),
+		'probs': tf.nn.softmax(logits, name='softmax_tensor')
+	}
+	eval_metric_ops = {
+		'accuracy': tf.metrics.accuracy(
+			labels = labels, predictions = predictions['classes'], name = 'accuracy'
+		)
+	}
+	if mode == tf.estimator.ModeKeys.PREDICT:
+		return tf.estimator.EstimatorSpec(mode = mode, predictions = predictions)
+
+	loss = tf.losses.sparse_softmax_cross_entropy(labels = labels, logits = logits)
+	# acc = tf.metrics.accuracy(
+	# 	labels = labels, predictions = predictions['classes'], name = 'accuracy'
+	# )
+
+	if mode == tf.estimator.ModeKeys.TRAIN:
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
+		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
+
+	if mode == tf.estimator.ModeKeys.EVAL:
+		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions)
+
+
+def main(unused_argv):
+	train_= np.load('../../data/MSD/msd-10-genre-train.npz')
+	valid_= np.load('../../data/MSD/msd-10-genre-valid.npz')
+
+	train_inputs = np.array(train_['inputs'], dtype = np.float32)
+	train_targets = np.array(train_['targets'], dtype = np.int32)
+	valid_inputs = np.array(valid_['inputs'], dtype = np.float32)
+	valid_targets = np.array(valid_['targets'], dtype = np.int32)
+
+
+	msd_classifier = tf.estimator.Estimator(model_fn = basic_lstm, model_dir = './models/msd_model')
+
+	tensors_to_log = {"probabilities": "softmax_tensor"}
+	# logging_hook = tf.train.LoggingTensorHook(tensors = tensors_to_log, every_n_iter = 1)
+
+	def get_input_fn(inputs, targets, mode, batch_size = 50):
+		if mode == tf.estimator.ModeKeys.TRAIN:
+			return tf.estimator.inputs.numpy_input_fn(
+				x = {'x': inputs},
+				y = targets,
+				batch_size = batch_size,
+				num_epochs = None,
+				shuffle = True)
+		elif mode == tf.estimator.ModeKeys.EVAL:
+			return tf.estimator.inputs.numpy_input_fn(
+				x = {'x': inputs},
+				y = targets,
+				batch_size = batch_size,
+				num_epochs = 1,
+				shuffle = False)
+		return None
+
+	for i in range(1000):
+		msd_classifier.train(
+			input_fn = get_input_fn(train_inputs, train_targets, tf.estimator.ModeKeys.TRAIN),
+			steps = 5
+			# hooks = [logging_hook]
+		)
+		# msd_classifier.evaluate(
+		# 	input_fn = get_input_fn(train_inputs, train_targets, tf.estimator.ModeKeys.EVAL)
+		# )
+		if (i + 1)%1 == 0:
+			msd_classifier.evaluate(
+			input_fn = get_input_fn(valid_inputs, valid_targets, tf.estimator.ModeKeys.EVAL)
+			)
+
+	# print(acc)
+
+if __name__ == '__main__':
+	tf.app.run()
