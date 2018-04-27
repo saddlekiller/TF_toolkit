@@ -231,9 +231,10 @@ class NormalizedRNNCell(rnn.BasicRNNCell):
 
 	def call(self, inputs, state):
 		"""Most basic RNN: output = new_state = act(W * input + U * state + B)."""
-		self._kernel[:input_depth, :] = self._kernel[:input_depth, :] / tf.reduce_sum(self._kernel[:input_depth, :])
-		self._kernel[input_depth:, :] = self._kernel[input_depth:, :] / tf.reduce_sum(self._kernel[input_depth:, :])
-		self._bias = self._bias / tf.reduce_sum(self._bias)
+		if self.built == True:
+			self._kernel[:input_depth, :] = self._kernel[:input_depth, :] / tf.reduce_sum(self._kernel[:input_depth, :])
+			self._kernel[input_depth:, :] = self._kernel[input_depth:, :] / tf.reduce_sum(self._kernel[input_depth:, :])
+			self._bias = self._bias / tf.reduce_sum(self._bias)
 
 		gate_inputs = math_ops.matmul(
 				array_ops.concat([inputs, state], 1), self._kernel)
