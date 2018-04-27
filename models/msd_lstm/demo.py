@@ -3,6 +3,7 @@ import numpy as np
 from tensorflow.contrib import rnn
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import array_ops
 
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -203,7 +204,7 @@ class NormalizedRNNCell(rnn.BasicRNNCell):
 		# self.input_spec = base_layer.InputSpec(ndim=2)
 
 		self._num_units = num_units
-		self._activation = activation or math_ops.tanh
+		self._activation = activation or tf.nn.tanh
 
 	@property
 	def state_size(self):
@@ -220,12 +221,12 @@ class NormalizedRNNCell(rnn.BasicRNNCell):
 
 			input_depth = inputs_shape[1].value
 			self._kernel = self.add_variable(
-					_WEIGHTS_VARIABLE_NAME,
+					'weight',
 					shape=[input_depth + self._num_units, self._num_units])
 			self._bias = self.add_variable(
-					_BIAS_VARIABLE_NAME,
+					'bias',
 					shape=[self._num_units],
-					initializer=init_ops.zeros_initializer(dtype=self.dtype))
+					initializer=tf.zeros_initializer(dtype=self.dtype))
 
 			self.built = True
 
@@ -236,9 +237,9 @@ class NormalizedRNNCell(rnn.BasicRNNCell):
 			self._kernel[input_depth:, :] = self._kernel[input_depth:, :] / tf.reduce_sum(self._kernel[input_depth:, :])
 			self._bias = self._bias / tf.reduce_sum(self._bias)
 
-		gate_inputs = math_ops.matmul(
-				array_ops.concat([inputs, state], 1), self._kernel)
-		gate_inputs = nn_ops.bias_add(gate_inputs, self._bias)
+		gate_inputs = tf.matmul(
+				tf.concat([inputs, state], 1), self._kernel)
+		gate_inputs = tf.add(gate_inputs, self._bias)
 		output = self._activation(gate_inputs)
 		return output, output
 
