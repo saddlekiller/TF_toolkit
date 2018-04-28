@@ -15,7 +15,7 @@ def basic_lstm(features, labels, mode):
 	n_classes = 10
 	rnn_cell = tf.contrib.rnn.LSTMCell(n_lstm_hidden)
 	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
-	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
+	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.sigmoid)
 	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
@@ -253,7 +253,7 @@ def normalized_rnn(features, labels, mode):
 	n_classes = 10
 	rnn_cell = NormalizedRNNCell(n_lstm_hidden)
 	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
-	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
+	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.sigmoid)
 	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
@@ -289,7 +289,7 @@ def basic_rnn(features, labels, mode):
 	n_classes = 10
 	rnn_cell = tf.nn.rnn_cell.BasicRNNCell(n_lstm_hidden)
 	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
-	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
+	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.sigmoid)
 	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
