@@ -12,7 +12,7 @@ python model.py BasicRNNModel NormalizedRNNCell
 #python model.py BasicRNNModel LSTMCell
 #python model.py BasicRNNModel GRUCell
 
-#python model.py NormRNNModel BasicRNNCell
-#python model.py NormRNNModel NormalizedRNNCell
-#python model.py NormRNNModel LSTMCell
-#python model.py NormRNNModel GRUCell
+python model.py NormRNNModel BasicRNNCell
+python model.py NormRNNModel NormalizedRNNCell
+python model.py NormRNNModel LSTMCell
+python model.py NormRNNModel GRUCell
