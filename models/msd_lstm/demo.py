@@ -16,8 +16,8 @@ def basic_lstm(features, labels, mode):
 	rnn_cell = tf.contrib.rnn.LSTMCell(n_lstm_hidden)
 	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
 	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
-	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.relu)
-	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.relu)
+	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.sigmoid)
+	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
 
 	predictions = {
@@ -198,53 +198,6 @@ def pure_affine(features, labels, mode):
 
 class NormalizedRNNCell(tf.nn.rnn_cell.BasicRNNCell):
 
-	# def __init__(self, num_units, activation=None, reuse=None, name=None, dtype=None):
-	# 	super(NormalizedRNNCell, self).__init__(num_units = num_units)
-	#
-	# 	# Inputs must be 2-dimensional.
-	# 	# self.input_spec = base_layer.InputSpec(ndim=2)
-	#
-	# 	self._num_units = num_units
-	# 	self._activation = activation or tf.nn.tanh
-	#
-	# @property
-	# def state_size(self):
-	# 	return self._num_units
-	#
-	# @property
-	# def output_size(self):
-	# 	return self._num_units
-	#
-	# def build(self, inputs_shape):
-	# 	if inputs_shape[1].value is None:
-	# 		raise ValueError("Expected inputs.shape[-1] to be known, saw shape: %s"
-	# 				% inputs_shape)
-	#
-	# 		input_depth = inputs_shape[1].value
-	# 		self._kernel = self.add_variable(
-	# 				'weight',
-	# 				shape=[input_depth + self._num_units, self._num_units])
-	# 		self._bias = self.add_variable(
-	# 				'bias',
-	# 				shape=[self._num_units],
-	# 				initializer=tf.zeros_initializer(dtype=self.dtype))
-	#
-	# 		self.built = True
-	#
-	# def call(self, inputs, state):
-	# 	"""Most basic RNN: output = new_state = act(W * input + U * state + B)."""
-	# 	if self.built == True:
-	# 		self._kernel[:input_depth, :] = self._kernel[:input_depth, :] / tf.reduce_sum(self._kernel[:input_depth, :])
-	# 		self._kernel[input_depth:, :] = self._kernel[input_depth:, :] / tf.reduce_sum(self._kernel[input_depth:, :])
-	# 		self._bias = self._bias / tf.reduce_sum(self._bias)
-	#
-	# 	gate_inputs = tf.matmul(
-	# 			tf.concat([inputs, state], 1), self._kernel)
-	# 	gate_inputs = tf.add(gate_inputs, self._bias)
-	# 	output = self._activation(gate_inputs)
-	# 	return output, output
-	#
-	#
 	def __init__(self, num_units, activation=None, reuse=None, name=None, dtype=None):
 		super(NormalizedRNNCell, self).__init__(num_units = num_units)
 
@@ -285,21 +238,7 @@ class NormalizedRNNCell(tf.nn.rnn_cell.BasicRNNCell):
 		self._kernel_2 = tf.slice(self._kernel, [self.input_depth, 0], [self._num_units, self._num_units])
 		self._kernel_1 = self._kernel_1 / tf.reduce_sum(self._kernel_1, 0)
 		self._kernel_2 = self._kernel_2 / tf.reduce_sum(self._kernel_2, 0)
-		# print(self._kernel.shape)
 		self._kernel = tf.concat([self._kernel_1, self._kernel_2], 0)
-
-
-		# print('-'*50)
-		# print(self._kernel_1.shape)
-		# print(self._kernel_2.shape)
-		# print(self._kernel.shape)
-		#
-		# print('-'*50)
-
-
-
-		# self._kernel[:self.input_depth, :] = self._kernel[:self.input_depth, :] / tf.reduce_sum(self._kernel[:self.input_depth, :])
-		# self._kernel[self.input_depth:, :] = self._kernel[self.input_depth:, :] / tf.reduce_sum(self._kernel[self.input_depth:, :])
 		self._bias = self._bias / tf.reduce_sum(self._bias)
 
 		gate_inputs = tf.matmul(
@@ -315,8 +254,8 @@ def normalized_rnn(features, labels, mode):
 	rnn_cell = NormalizedRNNCell(n_lstm_hidden)
 	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
 	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
-	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.relu)
-	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.relu)
+	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.sigmoid)
+	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.sigmoid)
 	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
 
 	predictions = {
@@ -344,13 +283,49 @@ def normalized_rnn(features, labels, mode):
 	if mode == tf.estimator.ModeKeys.EVAL:
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions)
 
+def basic_rnn(features, labels, mode):
+	n_lstm_hidden = 25
+	n_affine_hidden = 200
+	n_classes = 10
+	rnn_cell = tf.nn.rnn_cell.BasicRNNCell(n_lstm_hidden)
+	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
+	affine1 = tf.layers.dense(dynamic_rnn_outputs[:,-1,:], units = n_affine_hidden, activation = tf.nn.relu)
+	affine2 = tf.layers.dense(affine1, units = n_affine_hidden, activation = tf.nn.sigmoid)
+	affine3 = tf.layers.dense(affine2, units = n_affine_hidden, activation = tf.nn.sigmoid)
+	logits = tf.layers.dense(affine3, units = n_classes, activation = tf.identity)
+
+	predictions = {
+		'classes': tf.argmax(input = logits, axis = 1),
+		'probs': tf.nn.softmax(logits, name='softmax_tensor')
+	}
+	eval_metric_ops = {
+		'accuracy': tf.metrics.accuracy(
+			labels = labels, predictions = predictions['classes'], name = 'accuracy'
+		)
+	}
+	if mode == tf.estimator.ModeKeys.PREDICT:
+		return tf.estimator.EstimatorSpec(mode = mode, predictions = predictions)
+
+	loss = tf.losses.sparse_softmax_cross_entropy(labels = labels, logits = logits)
+	# acc = tf.metrics.accuracy(
+	# 	labels = labels, predictions = predictions['classes'], name = 'accuracy'
+	# )
+
+	if mode == tf.estimator.ModeKeys.TRAIN:
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
+		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
+
+	if mode == tf.estimator.ModeKeys.EVAL:
+		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions)
 
 model_mapping = {
 	'basic_lstm': basic_lstm,
 	'pure_affine': pure_affine,
 	'normalized_affine': normalized_affine,
 	'partial_normalized_affine': partial_normalized_affine,
-	'normalized_rnn': normalized_rnn
+	'normalized_rnn': normalized_rnn,
+	'basic_rnn': basic_rnn
 }
 
 def main(argv):
