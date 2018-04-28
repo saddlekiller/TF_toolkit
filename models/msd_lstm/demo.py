@@ -38,7 +38,7 @@ def basic_lstm(features, labels, mode):
 	# )
 
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
 
@@ -95,7 +95,7 @@ def normalized_affine(features, labels, mode):
 	# )
 
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
 
@@ -143,7 +143,7 @@ def partial_normalized_affine(features, labels, mode):
 	# )
 
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
 
@@ -189,7 +189,7 @@ def pure_affine(features, labels, mode):
 	# )
 
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
 
@@ -236,7 +236,7 @@ class NormalizedRNNCell(tf.nn.rnn_cell.BasicRNNCell):
 
 		self._kernel_1 = tf.slice(self._kernel, [0, 0], [self.input_depth, self._num_units])
 		self._kernel_2 = tf.slice(self._kernel, [self.input_depth, 0], [self._num_units, self._num_units])
-		self._kernel_1 = self._kernel_1 / tf.reduce_sum(self._kernel_1, 0)
+		# self._kernel_1 = self._kernel_1 / tf.reduce_sum(self._kernel_1, 0)
 		self._kernel_2 = self._kernel_2 / tf.reduce_sum(self._kernel_2, 0)
 		self._kernel = tf.concat([self._kernel_1, self._kernel_2], 0)
 		self._bias = self._bias / tf.reduce_sum(self._bias)
@@ -276,7 +276,7 @@ def normalized_rnn(features, labels, mode):
 	# )
 
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
 
@@ -312,7 +312,7 @@ def basic_rnn(features, labels, mode):
 	# )
 
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
 		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
 
@@ -343,7 +343,7 @@ def main(argv):
 	# msd_classifier = tf.estimator.Estimator(model_fn = basic_lstm, model_dir = './models/msd_model')
 	# msd_classifier = tf.estimator.Estimator(model_fn = normalized_affine, model_dir = './models/msd_model_all_prob')
 
-	msd_classifier = tf.estimator.Estimator(model_fn = model_mapping[argv[1]], model_dir = './models/' + argv[2])
+	msd_classifier = tf.estimator.Estimator(model_fn = model_mapping[argv[1]], model_dir = './models/1_' + argv[2])
 
 	tensors_to_log = {"probabilities": "softmax_tensor"}
 	# logging_hook = tf.train.LoggingTensorHook(tensors = tensors_to_log, every_n_iter = 1)
