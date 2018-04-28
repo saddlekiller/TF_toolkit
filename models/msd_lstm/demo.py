@@ -283,6 +283,63 @@ def normalized_rnn(features, labels, mode):
 	if mode == tf.estimator.ModeKeys.EVAL:
 		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions)
 
+def normalized_rnn2(features, labels, mode):
+	n_lstm_hidden = 25
+	n_affine_hidden = 200
+	n_classes = 10
+	rnn_cell = NormalizedRNNCell(n_lstm_hidden)
+	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
+
+	with tf.variable_scope('affine1'):
+		affine_w1_ = tf.get_variable(name = 'w', shape = [n_lstm_hidden, n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_w1 = affine_w1_ / tf.reduce_sum(affine_w1_, 0)
+		affine_b1_ = tf.get_variable(name = 'b', shape = [n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_b1 = affine_b1_ / tf.reduce_sum(affine_b1_, 0)
+		affine1 = tf.nn.sigmoid(tf.add(tf.matmul(dynamic_rnn_outputs[:, -1, :], affine_w1), affine_b1))
+
+	with tf.variable_scope('affine2'):
+		affine_w2_ = tf.get_variable(name = 'w', shape = [n_affine_hidden, n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_w2 = affine_w2_ / tf.reduce_sum(affine_w2_, 0)
+		affine_b2_ = tf.get_variable(name = 'b', shape = [n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_b2 = affine_b2_ / tf.reduce_sum(affine_b2_, 0)
+		affine2 = tf.nn.sigmoid(tf.add(tf.matmul(affine1, affine_w2), affine_b2))
+
+	with tf.variable_scope('affine3'):
+		affine_w3_ = tf.get_variable(name = 'w', shape = [n_affine_hidden, n_classes], initializer = tf.truncated_normal_initializer)
+		affine_w3 = affine_w3_ / tf.reduce_sum(affine_w3_, 0)
+		affine_b3_ = tf.get_variable(name = 'b', shape = [n_classes], initializer = tf.truncated_normal_initializer)
+		affine_b3 = affine_b3_ / tf.reduce_sum(affine_b3_, 0)
+		logits = tf.identity(tf.add(tf.matmul(affine2, affine_w3), affine_b3))
+
+
+	predictions = {
+		'classes': tf.argmax(input = logits, axis = 1),
+		'probs': tf.nn.softmax(logits, name='softmax_tensor')
+	}
+	eval_metric_ops = {
+		'accuracy': tf.metrics.accuracy(
+			labels = labels, predictions = predictions['classes'], name = 'accuracy'
+		)
+	}
+	if mode == tf.estimator.ModeKeys.PREDICT:
+		return tf.estimator.EstimatorSpec(mode = mode, predictions = predictions)
+
+	loss = tf.losses.sparse_softmax_cross_entropy(labels = labels, logits = logits)
+	# acc = tf.metrics.accuracy(
+	# 	labels = labels, predictions = predictions['classes'], name = 'accuracy'
+	# )
+
+	if mode == tf.estimator.ModeKeys.TRAIN:
+		optimizer = tf.train.AdamOptimizer(learning_rate = 0.01)
+		train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
+		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions, train_op = train_op)
+
+	if mode == tf.estimator.ModeKeys.EVAL:
+		return tf.estimator.EstimatorSpec(mode = mode, loss = loss, eval_metric_ops = eval_metric_ops, predictions = predictions)
+
+
+
+
 def basic_rnn(features, labels, mode):
 	n_lstm_hidden = 25
 	n_affine_hidden = 200
@@ -325,6 +382,7 @@ model_mapping = {
 	'normalized_affine': normalized_affine,
 	'partial_normalized_affine': partial_normalized_affine,
 	'normalized_rnn': normalized_rnn,
+	'normalized_rnn2': normalized_rnn2,
 	'basic_rnn': basic_rnn
 }
 
