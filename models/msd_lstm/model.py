@@ -136,7 +136,7 @@ def main(argv):
 				shuffle = False)
 		return None
 
-	for i in range(200):
+	for i in range(100):
 		msd_classifier.train(
 			input_fn = get_input_fn(train_inputs, train_targets, tf.estimator.ModeKeys.TRAIN),
 			steps = 5
