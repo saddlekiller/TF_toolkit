@@ -6,8 +6,7 @@ from tensorflow.python.layers import base as base_layer
 from cell import *
 
 tf.logging.set_verbosity(tf.logging.INFO)
-_BIAS_VARIABLE_NAME = "bias"
-_WEIGHTS_VARIABLE_NAME = "kernel"
+
 
 def BasicRNNModel(features, labels, mode, params):
 	n_lstm_hidden = 25
@@ -49,13 +48,13 @@ def NormRNNModel(features, labels, mode, params):
 	rnn_cell = params['celltype'](n_lstm_hidden)
 	dynamic_rnn_outputs, dynamic_rnn_states = tf.nn.dynamic_rnn(cell = rnn_cell, inputs = features['x'], dtype = tf.float32)
 	with tf.variable_scope('affine1'):
-		affine_w1_ = tf.get_variable(name = 'w', shape = [n_lstm_hidden, n_affine_hidden], initializer = tf.truncated_normal_initializer)
-		affine_b1_ = tf.get_variable(name = 'b', shape = [n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_w1 = tf.get_variable(name = 'w', shape = [n_lstm_hidden, n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_b1 = tf.get_variable(name = 'b', shape = [n_affine_hidden], initializer = tf.truncated_normal_initializer)
 		affine1 = tf.nn.sigmoid(tf.add(tf.matmul(dynamic_rnn_outputs[:, -1, :], affine_w1), affine_b1))
 
 	with tf.variable_scope('affine2'):
-		affine_w2_ = tf.get_variable(name = 'w', shape = [n_affine_hidden, n_affine_hidden], initializer = tf.truncated_normal_initializer)
-		affine_b2_ = tf.get_variable(name = 'b', shape = [n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_w2 = tf.get_variable(name = 'w', shape = [n_affine_hidden, n_affine_hidden], initializer = tf.truncated_normal_initializer)
+		affine_b2 = tf.get_variable(name = 'b', shape = [n_affine_hidden], initializer = tf.truncated_normal_initializer)
 		affine2 = tf.nn.sigmoid(tf.add(tf.matmul(affine1, affine_w2), affine_b2))
 
 	with tf.variable_scope('affine3'):

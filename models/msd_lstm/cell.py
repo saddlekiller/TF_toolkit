@@ -4,6 +4,9 @@ from tensorflow.contrib import rnn
 from tensorflow.python.ops import init_ops
 from tensorflow.python.layers import base as base_layer
 
+_BIAS_VARIABLE_NAME = "bias"
+_WEIGHTS_VARIABLE_NAME = "kernel"
+
 class NormalizedRNNCell(tf.nn.rnn_cell.BasicRNNCell):
 
 	def __init__(self, num_units, activation=None, reuse=None, name=None, dtype=None):
